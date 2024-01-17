@@ -1,5 +1,4 @@
 <template>
-  <button @click="handleMove"> Refresh Stockfish Move</button>
   <h1> Stockfish Elo: {{   stockfishEloChoice}}.</h1>
   <h1 v-if="winner == 'white' || winner == 'black'"> Winner:... {{ winner }}</h1>
 <section>
@@ -44,9 +43,6 @@ function setPositionConfirm(){
     console.log(setPosition.value);
 }
 let boardAPI = BoardApi;
-function randmove(){
-  boardAPI.move("e2e4");
-}
 
 var boardConfig = reactive({
   coordinates: true,
@@ -129,9 +125,7 @@ function handleNewGame() {
 }
 
 function handleMove() {
-  console.log("handle Move called");
   if(boardConfig.viewOnly != true && stockfishColor.value == boardAPI.getTurnColor()){
-    console.log("server give best move pls"+fen);
     var fen = boardAPI.getFen();
     emit('server-give-best-move', fen);
   }

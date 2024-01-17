@@ -78,9 +78,6 @@ function resetValue(){
 
 <style>
   .center {
-    box-sizing: border-box;
-    border: 1px black;
-    border-style: dotted;
     display: flex;
     justify-content: center;
     align-items: center;
