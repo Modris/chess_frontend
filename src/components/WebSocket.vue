@@ -1,5 +1,5 @@
 <template>
-
+<h1> H4 {{ props.move }} </h1>
 </template>
 
 <script setup>
@@ -21,11 +21,23 @@ stomp.connect('guest', 'guest', function(frame) {
 const props = defineProps({
   fen: String,
   stockfishEloChosen: String,
+  move: String,
+  fenHistoryUser: String,
+  moveHistoryUser: String,
 })
 
     watch(() => props.fen, (newFen) => {
-    if(newFen != 'undo'){ // if fen is undo then don't send to server
-    payload = JSON.stringify({'fen': newFen, 'userId': userId,'chosenElo':props.stockfishEloChosen});
+    if(newFen != 'undo'){ 
+        // if fen is undo then don't send to server. Same thing for start new game. Fen reset due to watcher usage.
+    payload = JSON.stringify({'fen': newFen, 'userId': userId,'chosenElo':props.stockfishEloChosen,'move':props.move});
+    sendFen(payload);
+    }
+})
+
+watch(() => props.fenHistoryUser, (fenHistoryUser) => {
+    if(fenHistoryUser != 'undo'){ 
+        // if fen is undo then don't send to server. Same thing for start new game. Fen reset due to watcher usage.
+    payload = JSON.stringify({'fen': fenHistoryUser, 'userId': userId,'chosenElo':props.stockfishEloChosen,'move':props.moveHistoryUser});
     sendFen(payload);
     }
 })
