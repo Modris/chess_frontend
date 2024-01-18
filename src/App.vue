@@ -61,7 +61,7 @@ function updateBestMove(bestmoveServer){
 const newGameSelected = ref('');
 const startNewGame = ref('');
 const chosenColor = ref('');
-const stockfishEloChosen = ref('1500');
+const stockfishEloChosen = ref(1500);
 
 let groupedProps = { startNewGame, chosenColor, stockfishEloChosen };
 

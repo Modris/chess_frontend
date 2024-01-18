@@ -11,7 +11,7 @@
 
 
 const props = defineProps({
-    stockfishEloChoice: String,
+    stockfishEloChoice: Number,
 })
 
 const emit = defineEmits(['previous-pressed','next-pressed', 'firstmove-pressed', 'lastmove-pressed'])

@@ -1,9 +1,18 @@
 <template>
-  <h1> LAST MOVE: {{ lastMove}}</h1>
+  <h1> ply number {{ historyPlyCounter}}</h1>
+  <h1 v-if="moveHistory.length >0"> Move: {{ moveHistory[historyPlyCounter-1]  }} </h1>
   <div class="gamehistory"> 
-    <GameHistoryMove @firstmove-pressed="firstMovePressedHistory" @lastmove-pressed="lastMovePressedHistory" @next-pressed="nextPressedHistory" @previous-pressed="previousPressedHistory" :stockfishEloChoice="stockfishEloChoice"/>
+    <GameHistoryMove @firstmove-pressed="firstMovePressedHistory" 
+    @lastmove-pressed="lastMovePressedHistory" @next-pressed="nextPressedHistory"
+     @previous-pressed="previousPressedHistory" 
+     :stockfishEloChoice="stockfishEloChoice"/>
+
     <h1 v-if="winner == 'white' || winner == 'black'"> Winner:... {{ winner }}</h1>
-    <p> {{  moveHistory }}</p>
+    <div class = "moveHistoryFlexbox">
+      <li v-for="item in moveHistory">
+        <span> {{  item }}</span>
+      </li>
+    </div>
     <br><br>
   </div>
 
@@ -43,7 +52,7 @@ const stockfishEloChoice = ref(1500);
 const setPosition = ref('');
 const stockfishColor = ref('');
 const reactiveConfig = true;
-const moveHistory = ref({});
+const moveHistory = ref([]);
 
 function setPositionConfirm(){
     boardAPI.setPosition(setPosition.value);
@@ -105,7 +114,7 @@ watch( () => props.startNewGame.value,async (newstartNewGame) => {
         } else if (props.chosenColor.value == 'black'){
           stockfishColor.value = 'white';
         }
-        moveHistory.value = '';
+        moveHistory.value.length = 0;
         
         //handleNewGame();
         
@@ -131,12 +140,14 @@ function handleNewGame() {
       handleMove();
     }
 }
-const lastMove = ref('');
+
 function handleMove() {
-  lastMove.value = boardAPI.getLastMove().lan;
-  moveHistory.value = moveHistory.value +','+lastMove.value;
-  boardAPI.getHistory(true).from;
-  boardAPI.getHistory(true).to;
+  if(boardAPI.getLastMove()){
+    moveHistory.value.push(boardAPI.getLastMove().lan);
+  }else {
+        console.error('Last move is undefined');
+      }
+
 
   if(boardConfig.viewOnly != true && boardAPI.getTurnColor() == playerColorChoice.value){
 
@@ -191,17 +202,58 @@ function historyStart(fen, move){
     boardAPI.move(move);
 }
 
+const isViewingHistory = ref(false);
+const historyPlyCounter = ref(0);
+
 function previousPressedHistory(){
-  boardAPI.viewPrevious();
+  if( isViewingHistory.value == true){
+    if( historyPlyCounter.value >=2){
+      historyPlyCounter.value = historyPlyCounter.value -1;
+    boardAPI.viewPrevious();
+    }
+  } else{
+    isViewingHistory.value = true;
+    historyPlyCounter.value =  boardAPI.getCurrentPlyNumber()-1;
+    boardAPI.viewPrevious();
+  }
 }
+
+
 function  nextPressedHistory(){
-  boardAPI.viewNext();
-}
+  if( isViewingHistory.value == true){
+    if(historyPlyCounter.value < boardAPI.getCurrentPlyNumber() )
+    historyPlyCounter.value = historyPlyCounter.value+1;
+     boardAPI.viewNext();
+   }
+  }
+
+
 function  firstMovePressedHistory(){
-  boardAPI.viewStart();
+  if(boardAPI.getCurrentPlyNumber() >0){
+
+    boardAPI.viewHistory(1);
+    isViewingHistory.value = true;
+    historyPlyCounter.value = 1;
+  }
 }
 function  lastMovePressedHistory(){
   boardAPI.stopViewingHistory();
+  isViewingHistory.value = false;
+  historyPlyCounter.value = boardAPI.getCurrentPlyNumber();
+  
 }
 
 </script>
+
+<style scoped>
+.moveHistoryFlexbox{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  width:100px;  
+
+}
+.moveHistoryFlexbox li {
+    list-style-type: none;
+}
+</style>
