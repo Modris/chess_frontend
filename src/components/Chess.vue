@@ -1,6 +1,6 @@
 <template>
-  <h1> ply number {{ historyPlyCounter}}</h1>
-  <h1 v-if="moveHistory.length >0"> Move: {{ moveHistory[historyPlyCounter-1]  }} </h1>
+  <button @click="test"> Scroll test</button>
+<main class = "grid"> 
   <div class="gamehistory"> 
     <GameHistoryMove @firstmove-pressed="firstMovePressedHistory" 
     @lastmove-pressed="lastMovePressedHistory" @next-pressed="nextPressedHistory"
@@ -8,9 +8,16 @@
      :stockfishEloChoice="stockfishEloChoice"/>
 
     <h1 v-if="winner == 'white' || winner == 'black'"> Winner:... {{ winner }}</h1>
-    <div class = "moveHistoryFlexbox">
+    <div id="scroller" class = "moveHistoryFlexbox">
       <li v-for="item in moveHistory">
-        <span> {{  item }}</span>
+        <span v-bind:class="{ 'highlight': 
+     (isViewingHistory && moveHistory.length > 0 && moveHistory[historyPlyCounter - 1] === item) ||
+     (!isViewingHistory && moveHistory[moveHistory.length - 1] === item)
+      }">
+        {{ item }}
+</span>
+
+
       </li>
     </div>
     <br><br>
@@ -39,6 +46,7 @@
       @draw="handleDraw"
     />
   </section>
+</main>
 </template>
 
 <script setup >
@@ -115,7 +123,7 @@ watch( () => props.startNewGame.value,async (newstartNewGame) => {
           stockfishColor.value = 'white';
         }
         moveHistory.value.length = 0;
-        
+        historyPlyCounter.value = 0;
         //handleNewGame();
         
        await(nextTick);
@@ -191,10 +199,18 @@ function handleCheckmate(isMated) {
   } else if(isMated == 'black'){
    // alert("White wins");
    winner.value = 'white';
-  }
-
-  
+  } 
 }
+
+
+watch(moveHistory.value, () => {
+  // Use nextTick to wait for the DOM to update before scrolling
+  nextTick(() => {
+    let scroller = document.querySelector("#scroller");
+    scroller.scrollTo(0, document.body.scrollHeight);
+  });
+});
+
 function historyStart(fen, move){
 
     boardConfig.viewOnly = true;
@@ -211,7 +227,7 @@ function previousPressedHistory(){
       historyPlyCounter.value = historyPlyCounter.value -1;
     boardAPI.viewPrevious();
     }
-  } else{
+  } else if( boardAPI.getCurrentPlyNumber() > 1) {
     isViewingHistory.value = true;
     historyPlyCounter.value =  boardAPI.getCurrentPlyNumber()-1;
     boardAPI.viewPrevious();
@@ -250,10 +266,22 @@ function  lastMovePressedHistory(){
   display:flex;
   gap:20px;
   flex-wrap:wrap;
-  width:100px;  
+  width:130px;  
+  height: 100px;
+  border:5px solid green;
+  border-style:dotted;
+  overflow-y: auto;
+  overflow-anchor: auto;
 
 }
 .moveHistoryFlexbox li {
     list-style-type: none;
+}
+.highlight{
+  background-color:darkgray;
+}
+.grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
 </style>
