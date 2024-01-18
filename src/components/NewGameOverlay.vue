@@ -1,9 +1,12 @@
 <template>
-  <p> Stockfish Strength: {{ stockfishElo }} elo </p>  
+  <br>
+  <span> Play with the computer </span>
+  <br><br>
+  <span> Choose Elo: </span>
     <br>
 <slider v-model="stockfishElo" color="#09793c" track-color="#FEFEFE" width="100%" :min="min" :max="max" 
-    :tooltip="answ" :alwaysShowTooltip="answ" :modelValue="myNumber" :height="height" />
-<p> Player Color:</p>
+   :alwaysShowHandle="answ" :tooltip="answ" :alwaysShowTooltip="answ" :modelValue="myNumber" :height="height" />
+    <br><br><br>
 <div class="container"> 
     <div class="item1"> <button class="black" @click="startGameWithBlack">  </button>  </div>
     <div class="item2"><button class="random" @click="startGameWithRandomSide">  </button>  </div>
@@ -18,11 +21,12 @@ const max = 3190;
 const min = 1320;
 const answ = true;
 const height = 20;
-var stockfishElo = ref(1600);
+var stockfishElo = ref(1500);
 
 const emit = defineEmits(['black-side','random-side','white-side'])
 function startGameWithBlack(){
     emit('black-side', stockfishElo);
+    
 }
 
 function startGameWithRandomSide(){
@@ -39,25 +43,22 @@ function startGameWithWhite(){
     display:flex;
     justify-content: center;
     align-items: center; /* Center items vertically */
-    padding:10px;
-}
-.container > div {
-  margin: 3px;
+    height:100px;
 }
 .item1{
     width:200px;
     height:210px;
-    align-self: flex-end;
+    align-self: center;
 }
 .item2{
     width:240px;
     height:240px;
-    align-self: normal;
+    align-self:  center;
 }
 .item3{
     width:200px;
     height:210px;
-    align-self: flex-end;
+    align-self: center;
 }
 
 .black{
@@ -65,7 +66,7 @@ function startGameWithWhite(){
   background-image: url("black_player_bg.png");
   background-color:lightblue;
   width:80%;
-  height:80%;
+  height:60%;
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Do not repeat the image */
   background-size: 120%;
@@ -75,7 +76,7 @@ function startGameWithWhite(){
   background-image: url("random_player_bg.png");
   background-color:lightblue;
   width:80%;
-  height:80%;
+  height:60%;
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Do not repeat the image */
   background-size: 100%;
@@ -85,7 +86,7 @@ function startGameWithWhite(){
   background-image: url("white_player_bg.png");
   background-color:lightblue;
   width:80%;
-  height:80%;
+  height:60%;
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Do not repeat the image */
   background-size: 110%;

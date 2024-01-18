@@ -1,7 +1,5 @@
 <template>
-  <h1> cChess {{  fen }}</h1>
   <GameHistoryMove @start="historyStart"/>
-  <h1> Stockfish Elo: {{   stockfishEloChoice}}.</h1>
   <h1 v-if="winner == 'white' || winner == 'black'"> Winner:... {{ winner }}</h1>
 <section>
     <div>
@@ -35,7 +33,7 @@ import { TheChessboard,BoardApi } from 'vue3-chessboard';
 import 'vue3-chessboard/style.css';
 import GameHistoryMove from '@/components/GameHistoryMove.vue';
 var playerColorChoice = ref('abc');
-var stockfishEloChoice = ref(1600);
+var stockfishEloChoice = ref(1500);
 var setPosition = ref('');
 var stockfishColor = ref('');
 const reactiveConfig = true;

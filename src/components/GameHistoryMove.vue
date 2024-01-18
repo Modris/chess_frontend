@@ -1,6 +1,5 @@
 <template>
 
-<button @click="start"> Test</button>
 </template>
 
 <script setup>

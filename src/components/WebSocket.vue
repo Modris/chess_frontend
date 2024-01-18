@@ -1,5 +1,5 @@
 <template>
-<h1> H4 {{ props.move }} </h1>
+    
 </template>
 
 <script setup>
