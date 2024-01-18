@@ -34,13 +34,7 @@ const props = defineProps({
     }
 })
 
-watch(() => props.fenHistoryUser, (fenHistoryUser) => {
-    if(fenHistoryUser != 'undo'){ 
-        // if fen is undo then don't send to server. Same thing for start new game. Fen reset due to watcher usage.
-    payload.value = JSON.stringify({'fen': fenHistoryUser, 'userId': userId,'chosenElo':props.stockfishEloChosen,'move':props.moveHistoryUser});
-    sendFen(payload.value);
-    }
-})
+
 
 
 function sendFen(payload){

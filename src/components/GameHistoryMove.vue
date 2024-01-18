@@ -1,9 +1,9 @@
 <template>
-<p> Stockfish elo {{ props.stockfishEloChoice }} </p>
 <button @click="firstMove">⏮️ </button>
 <button @click="previous"> ◀️ </button>
 <button @click="next"> ▶️ </button>
 <button @click="lastMove">⏭️ </button>
+<br><br>
 </template>
 
 <script setup>
@@ -41,3 +41,10 @@ function start(){
 }
 */
 </script>
+
+<style scoped>
+
+button{
+    font-size:40px;
+}
+</style>

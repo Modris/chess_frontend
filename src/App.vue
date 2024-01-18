@@ -3,13 +3,11 @@
   <main class = "container1">
     <div> </div> <!-- Do not Delete. For centering purposes. Also future features on the left are open.-->
     <div class="mainItem"> 
-      <Chess  @game-history-user="updateHistoryServer" @game-over=updateMove @started-new-game=resetValue @server-give-best-move="updateFen" :stockfishMove="stockfishMove"
+      <Chess  @undo-executed="undoExecuted" @game-history-user="updateHistoryServer" @game-over=updateMove @started-new-game=resetValue @server-give-best-move="updateFen" :stockfishMove="stockfishMove"
             v-bind="groupedProps"/>
     </div>
 
-     <div> 
-      Move history here
-     </div>
+  
 
      <div  v-if="newGameSelected" class="containerOverlap"> 
       <div> <button @click="closeOverlay" class="btn"> ❌ </button></div>
@@ -68,7 +66,9 @@ let groupedProps = { startNewGame, chosenColor, stockfishEloChosen };
 function updateNewGame(value){
   newGameSelected.value = value;
 }
-
+function undoExecuted(){
+  stockfishMove.value = 'h8h8';
+}
 function newGameWithBlack(stockfishElo){
   newGameSelected.value = false;
   chosenColor.value = 'black';
@@ -120,13 +120,12 @@ function closeOverlay(){
   display:grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows:auto;
-  border: 1px solid black; 
-  border-style:dotted;
+
   justify-content: center;
 
 }
 .containerOverlap{
-  grid-area: span 1/2 / 2/2;
+  grid-area: span 1/2 / 1/3;
   justify-content: center;
   align-items: center; /* Center the content horizontally and vertically */
   width: 350px; /* Set a maximum width for the containerOverlap */
@@ -147,7 +146,8 @@ function closeOverlay(){
 }
 
 .mainItem{
-  grid-area: span 1/2 / 2/2;
+  grid-area: span 1/2 / 1/3;
+  margin-left:320px;
 }
 
 
