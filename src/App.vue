@@ -48,22 +48,22 @@ import NewGameOverlay from '@/components/NewGameOverlay.vue';
   11) App.vue notices emit from Chess.vue and sends fenHistoryUser +userMove prop to websocket the emit.
 
 */
-var move = ref('begn');
-var fen = ref('');
+const move = ref('begn');
+const fen = ref('');
 function updateFen(currentFen){
   fen.value = currentFen;
 }
 
-var stockfishMove = ref('');
+const stockfishMove = ref('');
 function updateBestMove(bestmoveServer){
   stockfishMove.value = bestmoveServer;
 }
-var newGameSelected = ref('');
-var startNewGame = ref('');
-var chosenColor = ref('');
-var stockfishEloChosen = ref('1500');
+const newGameSelected = ref('');
+const startNewGame = ref('');
+const chosenColor = ref('');
+const stockfishEloChosen = ref('1500');
 
-var groupedProps = { startNewGame, chosenColor, stockfishEloChosen };
+let groupedProps = { startNewGame, chosenColor, stockfishEloChosen };
 
 function updateNewGame(value){
   newGameSelected.value = value;
@@ -79,9 +79,9 @@ function newGameWithBlack(stockfishElo){
 }
 function newGameWithRandom(stockfishElo){
   move.value = 'begn';
-  var random = ['white', 'black'];
-  var randomIndex = Math.floor(Math.random() * random.length); 
-  var randomColor = random[randomIndex];
+  let random = ['white', 'black'];
+  let randomIndex = Math.floor(Math.random() * random.length); 
+  let randomColor = random[randomIndex];
   newGameSelected.value = false;
   chosenColor.value = randomColor;
   stockfishEloChosen.value = stockfishElo.value.toString();

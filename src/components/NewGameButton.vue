@@ -6,7 +6,7 @@
 
 import {ref} from 'vue';
 
-var newGameOverlay = false;
+let newGameOverlay = false;
 const emit = defineEmits(['new-game'])
 function newGame(){
     newGameOverlay = true;
