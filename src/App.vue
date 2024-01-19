@@ -1,9 +1,12 @@
 <template>
+  <h1> APP {{ fen }} </h1>
   <NewGameButton @new-game="updateNewGame"/>
   <main class = "container1">
     <div> </div> <!-- Do not Delete. For centering purposes. Also future features on the left are open.-->
     <div class="mainItem"> 
-      <Chess  @undo-executed="undoExecuted" @game-history-user="updateHistoryServer" @game-over=updateMove @started-new-game=resetValue @server-give-best-move="updateFen" :stockfishMove="stockfishMove"
+      <Chess  @undo-executed="undoExecuted" @game-history-user="updateHistoryServer"
+       @game-over=updateMove @started-new-game=resetValue @server-give-best-move="updateFen" 
+       :stockfishMove="stockfishMove"
             v-bind="groupedProps"/>
     </div>
 
@@ -17,7 +20,9 @@
         </h1>     
       </div>
   </div>
- <WebSocket @received-server-bestmove=updateBestMove :moveHistoryUser="moveHistoryUser" :fenHistoryUser="fenHistoryUser" :move="move" :stockfishEloChosen="stockfishEloChosen" :fen="fen"/>
+ <WebSocket ref="myChild" @received-server-bestmove=updateBestMove :moveHistoryUser="moveHistoryUser"
+  :fenHistoryUser="fenHistoryUser" :move="move" :stockfishEloChosen="stockfishEloChosen"
+   />
   
   </main>
 
@@ -31,7 +36,7 @@ import Chess from '@/components/Chess.vue';
 import WebSocket from '@/components/WebSocket.vue';
 import NewGameButton from '@/components/NewGameButton.vue';
 import NewGameOverlay from '@/components/NewGameOverlay.vue';
-
+const myChild = ref(null);
 /*
  The sequence is:
   0) Start new game. Inject stockfishEloChosen, move into Websocket.vue
@@ -48,8 +53,14 @@ import NewGameOverlay from '@/components/NewGameOverlay.vue';
 */
 const move = ref('begn');
 const fen = ref('');
+const payload = ref('');
 function updateFen(currentFen){
+  myChild.value.userId
+  if(currentFen != 'undo'){ 
+  payload.value = JSON.stringify({'fen': currentFen, 'userId': myChild.value.userId,'chosenElo':stockfishEloChosen.value,'move':'test'});
+  myChild.value.sendFen(payload.value);
   fen.value = currentFen;
+  }
 }
 
 const stockfishMove = ref('');

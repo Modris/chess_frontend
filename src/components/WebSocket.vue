@@ -8,7 +8,8 @@ import Stomp from "webstomp-client";
 const userId = crypto.randomUUID(); // this will only work on localhost or HTTPS!!
 const url = 'http://localhost:8080/websocket'; // http link because of sockJS.
 const socket = new SockJS(url);
-const stomp = Stomp.over(socket);
+let  stomp = Stomp.over(socket);
+
 //var payload = JSON.stringify({'fen': 'k7/7Q/5Q2/8/8/8/3K4/8 w - - 0 1', 'userId': userId});
 const payload = ref('');
 const bestmove = ref('');
@@ -25,7 +26,7 @@ const props = defineProps({
   fenHistoryUser: String,
   moveHistoryUser: String,
 })
-
+/*
     watch(() => props.fen, (newFen) => {
     if(newFen != 'undo'){ 
         // if fen is undo then don't send to server. Same thing for start new game. Fen reset due to watcher usage.
@@ -33,8 +34,14 @@ const props = defineProps({
     sendFen(payload.value);
     }
 })
+Watcher was not the best idea due to black starting a game twice in a row would mean no new fen.
+So i exposed the method instead and the app will call it.
+*/
 
-
+defineExpose({
+    sendFen,
+    userId,
+})
 
 
 function sendFen(payload){
@@ -46,7 +53,7 @@ function sendFen(payload){
 const emit = defineEmits(['received-server-bestmove'])
 function handleServerResponse(message){
     bestmove.value = message.body;
-    console.log(bestmove.value)
+    console.log("Received from server: "+bestmove.value)
     emit('received-server-bestmove', bestmove.value);
 
 
@@ -60,6 +67,5 @@ stomp.onStompError = (frame) => {
     console.error('Broker reported error: ' + frame.headers['message']);
     console.error('Additional details: ' + frame.body);
 };
-
 
 </script>
