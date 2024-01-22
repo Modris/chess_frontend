@@ -31,7 +31,7 @@
          </div>
    
     <div id="scroller" class = "moveHistoryFlexbox">
-      <h1 v-if="moveHistory.length == 0"> Move History</h1>
+      <h1 class="moveHistory" v-if="moveHistory.length == 0"> Move History</h1>
       <li v-for="(item,index) in moveHistory">
         <span v-bind:class="{ 'highlight': 
               (isViewingHistory && moveHistory.length > 0 && moveHistory[historyPlyCounter - 1] === item) ||
@@ -89,7 +89,7 @@ const hideUndo = ref(true); // by default hide;
 const handleUndo = () => {
   if (boardConfig.viewOnly != true && boardAPI.getTurnColor() == stockfishColor.value){
     hideUndo.value = true;
-  } else if (boardConfig.viewOnly != true){
+  } else if (boardConfig.viewOnly != true){ 
     hideUndo.value = false;
     boardAPI.undoLastMove();
     boardAPI.undoLastMove();
@@ -155,7 +155,8 @@ function handleNewGame() {
     winner.value = '';
     boardConfig.viewOnly = false;
     fen.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    emit('server-give-best-move', fen.value); // for updating fen value to starting as White.
+    //emit('server-give-best-move', fen.value); // for updating fen value to starting as White.
+    emit('undo-executed')
     if(stockfishColor.value == boardAPI.getTurnColor()){
       handleMove();
     } else if(boardAPI.getTurnColor() == playerColorChoice.value){
@@ -164,10 +165,11 @@ function handleNewGame() {
 }
 
 function handleMove() {
-  if(boardAPI.getCurrentPlyNumber() != 0){
+
+    if(boardAPI.getCurrentPlyNumber() != 0){
     moveHistory.value.push(boardAPI.getLastMove().lan);
   }
-  if(boardConfig.viewOnly != true && boardAPI.getTurnColor() == playerColorChoice.value){
+  if(boardConfig.viewOnly != true && boardAPI.getTurnColor() == playerColorChoice.value && boardAPI.getCurrentPlyNumber() > 1){
 
     
     //moveHistory.value = moveHistory.value +','+boardAPI.getLastMove();
@@ -286,6 +288,7 @@ function handleResign(){
 <style scoped>
 .moveHistoryFlexbox{
   display:flex;
+  justify-content: center;
   gap:20px;
   flex-wrap:wrap;
   width:240px;  

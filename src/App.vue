@@ -1,5 +1,4 @@
 <template>
-  <h1> APP {{ fen }} </h1>
   <NewGameButton @new-game="updateNewGame"/>
   <main class = "container1">
     <div> </div> <!-- Do not Delete. For centering purposes. Also future features on the left are open.-->
@@ -84,7 +83,7 @@ function newGameWithBlack(stockfishElo){
   newGameSelected.value = false;
   chosenColor.value = 'black';
   move.value = 'begn';
-  stockfishEloChosen.value = stockfishElo.value.toString();
+  stockfishEloChosen.value = stockfishElo.value;
   startNewGame.value = true; 
   //console.log(groupedProps.value[0].value);
 }
@@ -95,7 +94,7 @@ function newGameWithRandom(stockfishElo){
   let randomColor = random[randomIndex];
   newGameSelected.value = false;
   chosenColor.value = randomColor;
-  stockfishEloChosen.value = stockfishElo.value.toString();
+  stockfishEloChosen.value = stockfishElo.value;
   startNewGame.value = true;
 }
 
@@ -103,7 +102,7 @@ function newGameWithWhite(stockfishElo){
   move.value = 'begn';
   newGameSelected.value = false;
   chosenColor.value = 'white';
-  stockfishEloChosen.value = stockfishElo.value.toString();
+  stockfishEloChosen.value = stockfishElo.value;
   startNewGame.value = true;
 }
 
