@@ -22,7 +22,11 @@
   <div class="gridItem2"> 
     <div class="gamehistory"> 
      <div class="gamehistoryInside">
-      <div class="biggerText"> <span> Stockfish elo: {{ stockfishEloChoice}}</span></div>
+      <div class="biggerText"> 
+        <button :class="{'websocket_online': !websocketStatus, 'websocket_offline': websocketStatus}"> &nbsp; &nbsp;</button>
+        <span> Stockfish elo: {{ stockfishEloChoice}} </span>
+      
+      </div>
         <div> 
             <GameHistoryMove @firstmove-pressed="firstMovePressedHistory" 
                 @lastmove-pressed="lastMovePressedHistory" @next-pressed="nextPressedHistory"
@@ -112,6 +116,7 @@ const props = defineProps({
   startNewGame: Object,
     chosenColor: Object,
     stockfishEloChosen: Object,
+    websocketStatus: Boolean,
 })
 const userFen = ref('');
 watch(() => props.stockfishMove, (newstockfishMove) => {
@@ -333,6 +338,8 @@ function handleResign(){
 .biggerText{
   padding:4px;
   font-size:30px;
+  justify-content: center;
+  text-align:center;
 }
 .winnerChicken{
   font-size:50px;
@@ -358,4 +365,14 @@ function handleResign(){
   background:white;
 }
 
+.websocket_online{
+  font-size:20px;
+  border-radius: 50%;
+  background-color:green;
+}
+.websocket_offline{
+  font-size:20px;
+  border-radius: 50%;
+  background-color:#F08080;
+}
 </style>

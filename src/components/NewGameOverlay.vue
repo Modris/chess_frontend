@@ -26,6 +26,7 @@ var stockfishElo = ref(1500);
 const emit = defineEmits(['black-side','random-side','white-side'])
 function startGameWithBlack(){
     emit('black-side', stockfishElo.value);
+    console.log(stockfishElo.value);
     
 }
 

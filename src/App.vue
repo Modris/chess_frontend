@@ -4,9 +4,10 @@
     <div> </div> <!-- Do not Delete. For centering purposes. Also future features on the left are open.-->
     <div class="mainItem"> 
       <Chess  @undo-executed="undoExecuted" @game-history-user="updateHistoryServer"
-       @game-over=updateMove @started-new-game=resetValue @server-give-best-move="updateFen" 
+       @started-new-game=resetValue @server-give-best-move="callServerForBestMove" 
        :stockfishMove="stockfishMove"
-            v-bind="groupedProps"/>
+            v-bind="groupedProps"
+            :websocketStatus="websocketStatus"/>
     </div>
 
   
@@ -19,8 +20,8 @@
         </h1>     
       </div>
   </div>
- <WebSocket ref="myChild" @received-server-bestmove=updateBestMove :moveHistoryUser="moveHistoryUser"
-  :fenHistoryUser="fenHistoryUser" :move="move" :stockfishEloChosen="stockfishEloChosen"
+ <WebSocket ref="myChild" @websocket-status="websocketStatusUpdate" @received-server-bestmove=updateBestMove :moveHistoryUser="moveHistoryUser"
+  :fenHistoryUser="fenHistoryUser"  :stockfishEloChosen="stockfishEloChosen" :fen="fen"
    />
   
   </main>
@@ -41,6 +42,10 @@ const myChild = ref(null);
   0) Start new game. Inject stockfishEloChosen, move into Websocket.vue
   1) server-give-best-move 2) update the fen 3) inject fen + move inside Websocket.vue 
   4) Websocket.vue watcher will notice changed fen value and send a request to the server for the best move
+  
+  CHANGED:
+
+  1) server-give-best-move 2) with defineExpose from Websocket.vue we call for bestmove straight up.
   5) received-server-bestmove from Websocket.vue emits to App.vue which calls function updateBestMove
   6) The function updates stockfishmove which then gets injected into the Chess.vue
   7) Chess.vue notices with watcher changed stockfishmove; boardAPI.move(move) is executed.
@@ -50,10 +55,10 @@ const myChild = ref(null);
   11) App.vue notices emit from Chess.vue and sends fenHistoryUser +userMove prop to websocket the emit.
 
 */
-const move = ref('begn');
+
 const fen = ref('');
 const payload = ref('');
-function updateFen(currentFen){
+function callServerForBestMove(currentFen){
   myChild.value.userId
   if(currentFen != 'undo'){ 
   payload.value = JSON.stringify({'fen': currentFen, 'userId': myChild.value.userId,'chosenElo':stockfishEloChosen.value,'move':'test'});
@@ -82,36 +87,34 @@ function undoExecuted(){
 function newGameWithBlack(stockfishElo){
   newGameSelected.value = false;
   chosenColor.value = 'black';
-  move.value = 'begn';
-  stockfishEloChosen.value = stockfishElo.value;
+
+  stockfishEloChosen.value = stockfishElo;
   startNewGame.value = true; 
   //console.log(groupedProps.value[0].value);
 }
 function newGameWithRandom(stockfishElo){
-  move.value = 'begn';
+
   let random = ['white', 'black'];
   let randomIndex = Math.floor(Math.random() * random.length); 
   let randomColor = random[randomIndex];
   newGameSelected.value = false;
   chosenColor.value = randomColor;
-  stockfishEloChosen.value = stockfishElo.value;
+  stockfishEloChosen.value = stockfishElo;
   startNewGame.value = true;
 }
 
 function newGameWithWhite(stockfishElo){
-  move.value = 'begn';
+ 
   newGameSelected.value = false;
   chosenColor.value = 'white';
-  stockfishEloChosen.value = stockfishElo.value;
+  stockfishEloChosen.value = stockfishElo;
   startNewGame.value = true;
 }
 
 function resetValue(){
   startNewGame.value = false;
 }
-function updateMove(end){
-  move.value = end;
-}
+
 var fenHistoryUser = ref('');
 var moveHistoryUser = ref('');
 function updateHistoryServer(userFen, userMove){
@@ -121,6 +124,11 @@ function updateHistoryServer(userFen, userMove){
 
 function closeOverlay(){
   newGameSelected.value = false;
+}
+
+let websocketStatus = ref(true);
+function websocketStatusUpdate(condition){
+  websocketStatus.value = condition;
 }
 </script>
 

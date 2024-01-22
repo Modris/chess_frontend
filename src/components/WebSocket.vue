@@ -11,7 +11,7 @@ const url = 'ws://localhost:8080/websocket'; // http link because of sockJS.
 let options = { debug: false, protocols: ['v12.stomp'], heartbeat: {incoming: 0, outgoing: 0} };
 let socket = new WebSocket(url);
 let  stomp = Stomp.over(socket, options);
-
+let websocketClosed = ref(false);
 //var payload = JSON.stringify({'fen': 'k7/7Q/5Q2/8/8/8/3K4/8 w - - 0 1', 'userId': userId});
 const payload = ref('');
 const bestmove = ref('');
@@ -25,6 +25,8 @@ let SOCKET_CLOSED = 3;
 stomp.connect('guest', 'guest', function(frame) {
     console.log("Connected!");
     stomp.subscribe("/topic/bestmove"+userId, handleServerResponse);
+    websocketClosed.value = false;
+    emit('websocket-status', websocketClosed.value);
     setTimeout(handlePing,3000); // heartbeat every 3 seconds. Starts ping pong!
 
 });
@@ -61,7 +63,7 @@ function sendFen(payload){
 }
 
 
-const emit = defineEmits(['received-server-bestmove'])
+const emit = defineEmits(['received-server-bestmove', 'websocket-status'])
 
 function handleServerResponse(message){
     bestmove.value = message.body;
@@ -108,8 +110,12 @@ let reconnectIntervalAfterClosed;
     reconnectIntervalAfterClosed = setInterval(websocketReconnect, 1000); 
     
   }
+
+
   let websocketReconnect = () => {
-   
+    websocketClosed.value = true;
+    emit('websocket-status', websocketClosed.value);
+
     if(socket.readyState == SOCKET_CONNECTING  || socket.readyState == SOCKET_CLOSING) {
          // don't reconnect if we are attempting to connect, connection is open or the socket is closing.
         return;
@@ -129,10 +135,22 @@ let reconnectIntervalAfterClosed;
         stomp.subscribe("/topic/bestmove"+userId, handleServerResponse);
         clearInterval(reconnectIntervalAfterClosed); // clears attempting to reconnect interval.
         setTimeout(handlePing,3000); // heartbeat every 3 seconds.
+        setTimeout(callServerForBestMoveWebsocket,1000); // wait for connection to 100% establish.
+        websocketClosed.value = false;
+        emit('websocket-status', websocketClosed.value);
     });
   }
 
- 
+  function callServerForBestMoveWebsocket(){
+    // ideally i should check if it's stockfishMove but that requires for Chess.vue to always emit server more to app.vue
+    // and then app.vue to inject prop into websocket.vue.
+    // right now this will make 1 extra call to server for bestmove for Stockfish player color on successful reconnect
+    // not bad as it is right now
+    if(props.fen != 'undo'){ 
+    payload.value = JSON.stringify({'fen': props.fen, 'userId': userId,'chosenElo': props.stockfishEloChosen,'move':'webs'});
+    sendFen(payload.value);
+    }
+}
     
 
  
