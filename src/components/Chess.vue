@@ -6,6 +6,7 @@
         <br>
         <input v-model="setPosition">
         <button @click="setPositionConfirm()"> Set Position </button>
+      
         <br>
         </div>
         <TheChessboard
@@ -20,41 +21,46 @@
   </section>
 
   <div class="gridItem2"> 
-    <div class="gamehistory"> 
-     <div class="gamehistoryInside">
-      <div class="biggerText"> 
-        <button :class="{'websocket_online': !websocketStatus, 'websocket_offline': websocketStatus}"> &nbsp; &nbsp;</button>
-        <span> Stockfish elo: {{ stockfishEloChoice}} </span>
-      
-      </div>
-        <div> 
-            <GameHistoryMove @firstmove-pressed="firstMovePressedHistory" 
+    <div class="gameHistoryItem1 biggerText"> 
+      <button :class="{'websocket_online': !websocketStatus, 'websocket_offline': websocketStatus}"> &nbsp; &nbsp;</button>
+        <span> Stockfish elo: {{ stockfishEloChoice}} </span> </div>
+    <div class="gameHistoryItem2"> <GameHistoryMove @firstmove-pressed="firstMovePressedHistory" 
                 @lastmove-pressed="lastMovePressedHistory" @next-pressed="nextPressedHistory"
                 @previous-pressed="previousPressedHistory" 
-               :stockfishEloChoice="stockfishEloChoice"/>
-         </div>
-   
-    <div id="scroller" class = "moveHistoryFlexbox">
+               :stockfishEloChoice="stockfishEloChoice"/></div>
+    <div class="gameHistoryItem3"> 
+      <div id="scroller" class = "moveHistoryFlexbox"> 
       <h1 class="moveHistory" v-if="moveHistory.length == 0"> Move History</h1>
       <li v-for="(item,index) in moveHistory">
         <span v-bind:class="{ 'highlight': 
-              (isViewingHistory && moveHistory.length > 0 && moveHistory[historyPlyCounter - 1] === item) ||
+              (isViewingHistory && moveHistory.length > 0 && index == historyPlyCounter-1 && moveHistory[historyPlyCounter - 1] === item) ||
               (!isViewingHistory && moveHistory[moveHistory.length - 1] === item)
                 }">
-              {{ index+1 }}   {{ item }}
+              {{ index+1 }}   {{ item }} 
           </span>
       </li>
+     </div>
+   
     </div>
-    <div class="gameHistoryInsideFourthItem">  
-        <button class="btn42" v-bind:class="{'btn43': !resignAllowed}" @click="handleResign"> Resign</button>
-        <button class="btn42" @click="boardAPI?.toggleOrientation()"> Flip Board </button>
-          <button class="btn42" v-bind:class="{'btn43': hideUndo}" @click="handleUndo">Undo</button>
+    <div class="gameHistoryItem4"> 
+     
+      <div v-if="!gameOver" class="gameHistoryItem4Flexbox"> 
+        
+          <div> 
+            <button  class="btn42" v-bind:class="{'btn43': !resignAllowed}" @click="handleResign"> Resign</button>
+          </div>  
+          <div> 
+          <button  class="btn42" @click="boardAPI?.toggleOrientation()"> Flip Board </button> 
+          </div>
+          <div> 
+          <button   class="btn42" v-bind:class="{'btn43': hideUndo}" @click="handleUndo">Undo</button> 
+          </div>
+      </div>
     </div>
-    <div>  <h1 class="winnerChicken"> {{ winner }}</h1> 
-    </div>
+    <div class="gameHistoryItem4Overlap">  <h1 class="winnerChicken"> {{ winner }}</h1> </div>
+ 
    </div>
-   </div>
-  </div>
+  
 
 </main>
 </template>
@@ -91,9 +97,10 @@ const boardConfig = reactive({
 const hideUndo = ref(true); // by default hide;
 
 const handleUndo = () => {
-  if (boardConfig.viewOnly != true && boardAPI.getTurnColor() == stockfishColor.value){
+
+  if (!hideUndo.value && boardConfig.viewOnly != true && boardAPI.getTurnColor() == stockfishColor.value){
     hideUndo.value = true;
-  } else if (boardConfig.viewOnly != true){ 
+  } else if (!hideUndo.value && boardConfig.viewOnly != true){ 
     hideUndo.value = false;
     boardAPI.undoLastMove();
     boardAPI.undoLastMove();
@@ -108,7 +115,7 @@ const handleUndo = () => {
   }
 }
 const winner = ref('');
-
+const gameOver = ref(false);
 
 
 const props = defineProps({
@@ -123,7 +130,6 @@ watch(() => props.stockfishMove, (newstockfishMove) => {
       if(boardConfig.viewOnly != true && boardAPI.getTurnColor() == stockfishColor.value){
         userFen.value = boardAPI.getFen();
         boardAPI.move(newstockfishMove);
-
       }
 })
 
@@ -158,6 +164,7 @@ const fen = ref('');
 function handleNewGame() {
     boardAPI.resetBoard();
     winner.value = '';
+    gameOver.value = false;
     boardConfig.viewOnly = false;
     fen.value = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     //emit('server-give-best-move', fen.value); // for updating fen value to starting as White.
@@ -170,24 +177,24 @@ function handleNewGame() {
 }
 
 function handleMove() {
-
+ 
     if(boardAPI.getCurrentPlyNumber() != 0){
     moveHistory.value.push(boardAPI.getLastMove().lan);
   }
   if(boardConfig.viewOnly != true && boardAPI.getTurnColor() == playerColorChoice.value && boardAPI.getCurrentPlyNumber() > 1){
 
-    
     //moveHistory.value = moveHistory.value +','+boardAPI.getLastMove();
     //emit('game-history-user', userFen.value, boardAPI.getLastMove().lan); // save user move to game history
     hideUndo.value = false;
   } else if(boardConfig.viewOnly != true && stockfishColor.value == boardAPI.getTurnColor()){
     hideUndo.value = true;
      fen.value = boardAPI.getFen();
-    emit('server-give-best-move', fen.value); 
+     emit('server-give-best-move', fen.value); 
   }
 }
 
 function handleDraw() {
+  gameOver.value = true;
   resignAllowed.value = false;
   let isDraw = boardAPI.getIsDraw();
   let isStalemate = boardAPI.getIsStalemate();
@@ -207,6 +214,7 @@ function handleDraw() {
   }
 }
 function handleCheckmate(isMated) {
+  gameOver.value = true;
   resignAllowed.value = false;
   emit('game-over', 'end');
   hideUndo.value = true;
@@ -283,6 +291,7 @@ function handleResign(){
     let firstLetter = playerColorChoice.value.charAt(0).toUpperCase();
     let restOfString = playerColorChoice.value.substring(1);
     winner.value = firstLetter+restOfString+' resigns.';
+    gameOver.value = true;
     boardConfig.viewOnly = true;
     resignAllowed.value = false;
   }
@@ -299,7 +308,7 @@ function handleResign(){
   width:240px;  
   height: 100px;
   overflow-y: auto;
-  padding:50px;
+  padding:30px;
   margin-top:-50px;
 
 }
@@ -313,28 +322,54 @@ function handleResign(){
 .grid{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  
+
 }
 .gridItem2{
-  display:flex;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
   justify-content: center;
   align-items:center;
-}
-.gamehistory{
-  margin-top:-100px;
-  background:#eeeeed;
-
-  width:350px;
-  height:55%;
-  border:5px solid darkgray;
+  border: 5px darkgray;
   border-style:double;
+  
+background: radial-gradient(circle at 18.7% 37.8%, rgb(250, 250, 250) 0%, rgb(225, 234, 238) 90%);
+
+  width:300px;
+  margin-top:100px;
+  margin-bottom:100px;
+
 }
-.gamehistoryInside{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap:20px;
-  flex-wrap:wrap;
+.gameHistoryItem1{
+grid-area: 1/1/1/4;
+
 }
+.gameHistoryItem2{
+  grid-area: 2/1/2/4;
+  margin-top:-40px;
+}
+.gameHistoryItem3{
+
+  grid-area: 3/1/3/4;
+  margin-top:0px;
+}
+.gameHistoryItem4{
+  grid-area:  4/1/4/4;
+  z-index:6;
+  margin-top:-80px;
+  height:60px;
+}
+.gameHistoryItem4Flexbox{
+  display:flex;
+
+  justify-content: center;
+}
+.gameHistoryItem4Overlap{
+  grid-area: 4/1/4/4;
+  z-index:5;
+  margin-top:-50px;
+}
+
+
 .biggerText{
   padding:4px;
   font-size:30px;
@@ -342,15 +377,16 @@ function handleResign(){
   text-align:center;
 }
 .winnerChicken{
-  font-size:50px;
-  margin-top:-20px;
-}
-.gameHistoryInsideFourthItem{
-  margin-top:-50px;
+  font-size:40px;
+  margin-top:20px;
 }
 
+
+
 .btn42 {
-  font-size:28px;
+  padding:6px;
+  font-size:24px;
+
 }
 
 .btn42:hover{
@@ -358,7 +394,8 @@ function handleResign(){
 }
 
 .btn43{
-  font-size:28px;
+  padding:6px;
+  font-size:24px;
   background-color:#F08080;
 }
 .btn43:hover{
