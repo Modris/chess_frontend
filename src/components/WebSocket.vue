@@ -100,6 +100,7 @@ stomp.onStompError = (frame) => {
 
  socket.onclose= () => {
     console.log("WebSocket closed....");
+    reconnectIntervalAfterClosed = setInterval(websocketReconnect, 1000);  // reconnect every 1sec.
 
 }
 let reconnectIntervalAfterClosed;
