@@ -67,6 +67,8 @@ const emit = defineEmits(['received-server-bestmove', 'websocket-status'])
 
 function handleServerResponse(message){
     bestmove.value = message.body;
+    let result = message.body.replaceAll("\"", "");
+    bestmove.value = result;
     console.log("Received from server: "+bestmove.value)
     if(bestmove.value == 'Pong'){
         clearInterval(reconnectInterval);
@@ -78,12 +80,13 @@ function handleServerResponse(message){
 }
 
 function handlePing(){
+    if(socket.readyState == SOCKET_OPEN){
     let ping = JSON.stringify({'fen': 'Ping', 'userId': userId, 'move': 'Ping'});
     console.log("Sending Ping!");
     stomp.send("/app/websocket", ping);
+    }
     reconnectInterval = setInterval(reconnectingIntervalFunction, 8000); // 8 seconds before we attempt to reconnect
     // if no pong is received it will call reconnectIntervalFunction().
-
 }
 
 stomp.onWebSocketError = (error) => {
@@ -100,12 +103,14 @@ stomp.onStompError = (frame) => {
 
  socket.onclose= () => {
     console.log("WebSocket closed....");
-    reconnectIntervalAfterClosed = setInterval(websocketReconnect, 1000);  // reconnect every 1sec.
+    clearTimeout(handlePing);
+    //reconnectIntervalAfterClosed = setInterval(websocketReconnect, 1000);  // reconnect every 1sec.
 
 }
 let reconnectIntervalAfterClosed;
   // Your function to be called at regular intervals
   let reconnectingIntervalFunction = () => {
+    clearTimeout(handlePing);
     clearInterval(reconnectInterval); // Clear reconnecting after 8 seconds if no ping pong (heartbeat) received.
    // After websocket closed, reconnect every 1 second
     reconnectIntervalAfterClosed = setInterval(websocketReconnect, 1000); 
