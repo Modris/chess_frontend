@@ -6,12 +6,14 @@
 import { ref, watch, defineProps, nextTick} from 'vue';
 import Stomp from "webstomp-client";
 const userId = crypto.randomUUID(); // this will only work on localhost or HTTPS!!
-const url = 'ws://localhost:8080/websocket'; // http link because of sockJS.
+//const url = 'ws://localhost:8888/websocket'; // Now ws. before it was http link because of sockJS.
+const url = 'ws://localhost:8888/websocket';
 //let options = {debug: false, protocols: Stomp.supportedProtocols()};
 let options = { debug: false, protocols: ['v12.stomp'], heartbeat: {incoming: 0, outgoing: 0} };
 let socket = new WebSocket(url);
 let  stomp = Stomp.over(socket, options);
 let websocketClosed = ref(false);
+
 //var payload = JSON.stringify({'fen': 'k7/7Q/5Q2/8/8/8/3K4/8 w - - 0 1', 'userId': userId});
 const payload = ref('');
 const bestmove = ref('');
@@ -113,12 +115,19 @@ let reconnectIntervalAfterClosed;
     clearTimeout(handlePing);
     clearInterval(reconnectInterval); // Clear reconnecting after 8 seconds if no ping pong (heartbeat) received.
    // After websocket closed, reconnect every 1 second
-    reconnectIntervalAfterClosed = setInterval(websocketReconnect, 1000); 
+   setTimeout(maxReconnectAttemps, 15000); // We will disable reconnects after 15 seconds.
+    reconnectIntervalAfterClosed = setInterval(websocketReconnect, 3000); // reconnect every 3 seconds.
     
   }
 
+  function maxReconnectAttemps() {
+    clearInterval(reconnectIntervalAfterClosed);
+    console.log("Maximum websocket reconnecting time reached. No more websocket reconnect attemps.");
+  }
 
   let websocketReconnect = () => {
+
+
     websocketClosed.value = true;
     emit('websocket-status', websocketClosed.value);
 
@@ -130,8 +139,9 @@ let reconnectIntervalAfterClosed;
         console.log("WebSocket closed. Attempting to reconnect");
     }
     if(socket.readyState == SOCKET_OPEN){
-        console.log("Websocket is Open. Clearing the interval value.");
-        clearInterval(reconnectIntervalAfterClosed);
+        //console.log("Websocket is Open. Clearing the interval value.");
+       // clearInterval(reconnectIntervalAfterClosed);
+       // Disabling this for now. For some reason i had a false positive.
     }
 
     socket = new WebSocket(url);
@@ -142,6 +152,7 @@ let reconnectIntervalAfterClosed;
         clearInterval(reconnectIntervalAfterClosed); // clears attempting to reconnect interval.
         setTimeout(handlePing,3000); // heartbeat every 3 seconds.
         setTimeout(callServerForBestMoveWebsocket,1000); // wait for connection to 100% establish.
+
         websocketClosed.value = false;
         emit('websocket-status', websocketClosed.value);
     });

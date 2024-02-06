@@ -63,7 +63,7 @@ function startGameWithWhite(){
 
 .black{
     
-  background-image: url("black_player_bg.webp");
+  background-image: url("/black_player_bg.webp");
   background-color:lightblue;
   width:80%;
   height:60%;
@@ -73,7 +73,7 @@ function startGameWithWhite(){
 }
 .random{
     
-  background-image: url("random_player_bg.webp");
+  background-image: url("/random_player_bg.webp");
   background-color:lightblue;
   width:80%;
   height:60%;
@@ -83,7 +83,7 @@ function startGameWithWhite(){
   }
   .white{
     
-  background-image: url("white_player_bg.webp");
+  background-image: url("/white_player_bg.webp");
   background-color:lightblue;
   width:80%;
   height:60%;

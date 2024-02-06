@@ -1,4 +1,5 @@
 <template>
+  <Login />
   <NewGameButton @new-game="updateNewGame"/>
   <main class = "container1">
     <div> </div> <!-- Do not Delete. For centering purposes. Also future features on the left are open.-->
@@ -36,6 +37,7 @@ import Chess from '@/components/Chess.vue';
 import WebSocket from '@/components/WebSocket.vue';
 import NewGameButton from '@/components/NewGameButton.vue';
 import NewGameOverlay from '@/components/NewGameOverlay.vue';
+import Login from '@/components/Login.vue';
 const myChild = ref(null);
 /*
  The sequence is:
