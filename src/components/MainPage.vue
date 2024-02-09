@@ -1,11 +1,13 @@
 <template>
+     
+
   <a href="/history"> History</a>
-    <Login />
+    <Login ref="myChildLogin" v-bind="groupedPropsSaveGame"/>
     <NewGameButton @new-game="updateNewGame"/>
     <main class = "container1">
       <div> </div> <!-- Do not Delete. For centering purposes. Also future features on the left are open.-->
       <div class="mainItem"> 
-        <Chess  @undo-executed="undoExecuted" @game-history-user="updateHistoryServer"
+        <Chess  @save-game="saveGameServer" @undo-executed="undoExecuted" @game-history-user="updateHistoryServer"
          @started-new-game=resetValue @server-give-best-move="callServerForBestMove" 
          :stockfishMove="stockfishMove"
               v-bind="groupedProps"
@@ -22,7 +24,7 @@
           </h1>     
         </div>
     </div>
-   <WebSocket ref="myChild" @websocket-status="websocketStatusUpdate" @received-server-bestmove=updateBestMove :moveHistoryUser="moveHistoryUser"
+   <WebSocket ref="myChildWebsSocket" @websocket-status="websocketStatusUpdate" @received-server-bestmove=updateBestMove :moveHistoryUser="moveHistoryUser"
     :fenHistoryUser="fenHistoryUser"  :stockfishEloChosen="stockfishEloChosen" :fen="fen"
      />
     
@@ -40,7 +42,8 @@
   import NewGameButton from '@/components/NewGameButton.vue';
   import NewGameOverlay from '@/components/NewGameOverlay.vue';
   import Login from '@/components/Login.vue';
-  const myChild = ref(null);
+  const myChildWebsSocket = ref(null);
+
   /*
    The sequence is:
     0) Start new game. Inject stockfishEloChosen, move into Websocket.vue
@@ -63,14 +66,15 @@
   const fen = ref('');
   const payload = ref('');
   function callServerForBestMove(currentFen){
-    myChild.value.userId
+    myChildWebsSocket.value.userId
     if(currentFen != 'undo'){ 
-    payload.value = JSON.stringify({'fen': currentFen, 'userId': myChild.value.userId,'chosenElo':stockfishEloChosen.value,'move':'test'});
-    myChild.value.sendFen(payload.value);
+    payload.value = JSON.stringify({'fen': currentFen, 'userId': myChildWebsSocket.value.userId,'chosenElo':stockfishEloChosen.value,'move':'test'});
+    myChildWebsSocket.value.sendFen(payload.value);
     fen.value = currentFen;
     }
   }
   
+
   const stockfishMove = ref('');
   function updateBestMove(bestmoveServer){
     stockfishMove.value = bestmoveServer;
@@ -81,7 +85,7 @@
   const stockfishEloChosen = ref(1500);
   
   let groupedProps = { startNewGame, chosenColor, stockfishEloChosen };
-  
+
   function updateNewGame(value){
     newGameSelected.value = value;
   }
@@ -134,6 +138,21 @@
   function websocketStatusUpdate(condition){
     websocketStatus.value = condition;
   }
+
+  const winner = ref('');
+  const moveHistoryString = ref('');
+  const beforeLastFen = ref('');
+  const playerColorChoice = ref('');
+  const stockfishEloChoice = ref('');
+  function saveGameServer( moveHistoryAnswer, moveHistoryFenAnswer, winnerAnswer, playerColorChoiceAnswer, stockfishEloChoiceAnswer){
+    stockfishEloChoice.value = stockfishEloChoiceAnswer;
+    winner.value = winnerAnswer;
+    playerColorChoice.value = playerColorChoiceAnswer;
+    beforeLastFen.value = moveHistoryFenAnswer.value[moveHistoryFenAnswer.value.length-2]; // before last FEN
+    moveHistoryString.value = moveHistoryAnswer.value.toString();
+
+  }
+  let groupedPropsSaveGame = { moveHistoryString, beforeLastFen, winner, playerColorChoice, stockfishEloChoice }
   </script>
   
   <style>

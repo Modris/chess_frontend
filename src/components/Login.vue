@@ -14,20 +14,36 @@ import {ref} from 'vue'
 
 const listItems = ref({})
 
+const props = defineProps({
+  winner: String,
+  stockfishEloChoice: String,
+  playerColorChoice: Object,
+  beforeLastFen: Object,
+  moveHistoryString: Object,
+
+})
+
 const saveGame = async () => {
     // Get CSRF token from cookie
     const csrfToken = getCookie('XSRF-TOKEN');
-
+    const formData = new FormData();
+    formData.append('winner', props.winner.value)
+    formData.append('elo', props.stockfishEloChoice.value)
+    formData.append('color', props.playerColorChoice.value)
+    formData.append('moves', props.moveHistoryString.value)
+    formData.append('fen', props.beforeLastFen.value)
     try {
       // Send a POST request to /logout with the CSRF token
       const response = await fetch('http://localhost:8888/save', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+        
          'X-XSRF-TOKEN': csrfToken, // Include CSRF token in the header
         },
         credentials: 'include', // Include cookies in the request
+        body: formData,
       });
+      console.log(response);
     } catch (error) {
       console.error('Saving Game into Database Error: ', error);
     }

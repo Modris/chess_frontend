@@ -1,12 +1,11 @@
 <template>
 <main class = "grid"> 
- 
+
+
   <section>
         <div>
         <br>
-        <input v-model="setPosition">
-        <button @click="setPositionConfirm()"> Set Position </button>
-        <button @click="setMoveLast()"> f6g7 </button>
+
       
         <br>
         </div>
@@ -74,22 +73,16 @@ import 'vue3-chessboard/style.css';
 import GameHistoryMove from '@/components/GameHistoryMove.vue';
 const playerColorChoice = ref('abc');
 const stockfishEloChoice = ref(1500);
-const setPosition = ref('');
 const stockfishColor = ref('');
 const reactiveConfig = true;
 const moveHistory = ref([]);
-const emit = defineEmits(['server-give-best-move','started-new-game','game-over', 'game-history-user', 'undo-executed'])
+const moveHistoryFen = ref([]);
+const emit = defineEmits(['save-game','server-give-best-move','started-new-game','game-over', 'game-history-user', 'undo-executed'])
 
 
-function setPositionConfirm(){
-    boardAPI.setPosition(setPosition.value);
-    console.log(setPosition.value);
-}
+
 let boardAPI = BoardApi;
 
-function setMoveLast(){
-  boardAPI.move("f6g7");
-}
 const boardConfig = reactive({
   coordinates: true,
   viewOnly: false,
@@ -109,6 +102,7 @@ const handleUndo = () => {
     boardAPI.undoLastMove();
     boardAPI.undoLastMove();
     moveHistory.value.length -=2;
+    moveHistoryFen.value.length -=2;
      fen.value = 'undo'; // reset fen to undo so the watcher in websocket with the new move will update
     // the server move depends on current fen. If fen is the same with undo then there will be no stockfish call.
     emit('server-give-best-move', fen.value);
@@ -149,6 +143,7 @@ watch( () => props.startNewGame.value,async (newstartNewGame) => {
           stockfishColor.value = 'white';
         }
         moveHistory.value.length = 0;
+        moveHistoryFen.value.length = 0;
         historyPlyCounter.value = 0;
         resignAllowed.value = true;
         //handleNewGame();
@@ -184,6 +179,7 @@ function handleMove() {
  
     if(boardAPI.getCurrentPlyNumber() != 0){
     moveHistory.value.push(boardAPI.getLastMove().lan);
+    moveHistoryFen.value.push(boardAPI.getFen());
   }
   if(boardConfig.viewOnly != true && boardAPI.getTurnColor() == playerColorChoice.value && boardAPI.getCurrentPlyNumber() > 1){
 
@@ -198,7 +194,7 @@ function handleMove() {
 }
 
 function handleDraw() {
-  gameOver.value = true;
+  
   resignAllowed.value = false;
   let isDraw = boardAPI.getIsDraw();
   let isStalemate = boardAPI.getIsStalemate();
@@ -216,9 +212,11 @@ function handleDraw() {
   } else{
     winner.value = 'Draw.';
   }
+  gameOver.value = true;
+  saveGame();
 }
 function handleCheckmate(isMated) {
-  gameOver.value = true;
+  
   resignAllowed.value = false;
   emit('game-over', 'end');
   hideUndo.value = true;
@@ -230,6 +228,26 @@ function handleCheckmate(isMated) {
    // alert("White wins");
    winner.value = 'White is victorious';
   } 
+  gameOver.value = true;
+  saveGame();
+}
+
+function handleResign(){
+  if(boardConfig.viewOnly != true && playerColorChoice.value != 'abc'){
+    hideUndo.value = true;
+    let firstLetter = playerColorChoice.value.charAt(0).toUpperCase();
+    let restOfString = playerColorChoice.value.substring(1);
+    winner.value = firstLetter+restOfString+' resigns.';
+    gameOver.value = true;
+    boardConfig.viewOnly = true;
+    resignAllowed.value = false;
+    saveGame();
+  }
+}
+
+function  saveGame(){
+  emit('save-game', moveHistory, moveHistoryFen, winner.value, playerColorChoice.value, stockfishEloChoice.value);
+
 }
 
 
@@ -289,17 +307,7 @@ function  lastMovePressedHistory(){
   
 }
 
-function handleResign(){
-  if(boardConfig.viewOnly != true && playerColorChoice.value != 'abc'){
-    hideUndo.value = true;
-    let firstLetter = playerColorChoice.value.charAt(0).toUpperCase();
-    let restOfString = playerColorChoice.value.substring(1);
-    winner.value = firstLetter+restOfString+' resigns.';
-    gameOver.value = true;
-    boardConfig.viewOnly = true;
-    resignAllowed.value = false;
-  }
-}
+
 
 </script>
 
