@@ -6,6 +6,7 @@
         <br>
         <input v-model="setPosition">
         <button @click="setPositionConfirm()"> Set Position </button>
+        <button @click="setMoveLast()"> f6g7 </button>
       
         <br>
         </div>
@@ -86,6 +87,9 @@ function setPositionConfirm(){
 }
 let boardAPI = BoardApi;
 
+function setMoveLast(){
+  boardAPI.move("f6g7");
+}
 const boardConfig = reactive({
   coordinates: true,
   viewOnly: false,

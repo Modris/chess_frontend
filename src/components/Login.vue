@@ -4,8 +4,7 @@
 
 <div>
     <button @click="logout">LogoutAJAX</button>
-    <button @click="saveUsername">Save username MySQL</button>
-    <button @click="getUsername">Get username MySQL</button>
+    <button @click="saveGame">Save Game</button>
   </div>
 </template>
 
@@ -14,17 +13,26 @@
 import {ref} from 'vue'
 
 const listItems = ref({})
-async function getUsername() {
-    try{
- const res = await fetch('/user');
-  const finalRes = await res.json();
-  listItems.value = finalRes;
-    } catch (error){
-        // error not yet handled.
-        console.log("Error fetching data from the backend "+error);
+
+const saveGame = async () => {
+    // Get CSRF token from cookie
+    const csrfToken = getCookie('XSRF-TOKEN');
+
+    try {
+      // Send a POST request to /logout with the CSRF token
+      const response = await fetch('http://localhost:8888/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+         'X-XSRF-TOKEN': csrfToken, // Include CSRF token in the header
+        },
+        credentials: 'include', // Include cookies in the request
+      });
+    } catch (error) {
+      console.error('Saving Game into Database Error: ', error);
     }
-    
 }
+
 
 const login = () => {
     // Redirect to the specified URL
