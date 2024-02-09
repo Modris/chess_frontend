@@ -1,6 +1,9 @@
 <template>
    <a href="/"> MainPage</a>
    <button @click="getGameHistory">Get Game History</button>
+   <input v-model="page" placeholder="Page">
+   <input v-model="pageSize" placeholder="Page Size">
+  <p> Page: {{  page }}. PageSize: {{ pageSize}}</p>
     <main class = "grid"> 
      
       <section>
@@ -9,47 +12,16 @@
             <br>
             </div>
           <article v-if = "calledHistory" class = "grid"> 
-            <div class = "grid-item"> 
+            <div v-for="(numberOfElements, index) in numberOfElements" :key="index" class="grid-item">
               <TheChessboard
-              :board-config="boardConfig1"
-              :reactive-config="reactiveConfig"
-              :player-color="playerColorChoice"
-              @board-created="handleBoardCreated1" />
+                :board-config="boardConfig[index]"
+                :reactive-config="reactiveConfig"
+                :player-color="playerColorChoice"
+                @board-created="(api) => (boardAPI[index] = api)"
+              />
+              <div> Lorem ipsum </div>
             </div>
-            <div class = "grid-item"> Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</div>
-        
-             <div class = "grid-item"> 
-              <TheChessboard
-              :board-config="boardConfig2"
-              :reactive-config="reactiveConfig"
-              :player-color="playerColorChoice"
-              @board-created="handleBoardCreated2" />
-            </div>
-            <div class = "grid-item"> Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. </div>
-            <div class = "grid-item"> 
-              <TheChessboard
-              :board-config="boardConfig3"
-              :reactive-config="reactiveConfig"
-              :player-color="playerColorChoice"
-              @board-created="handleBoardCreated3" />
-            </div>
-            <div class = "grid-item"> Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. </div>
-             <div class = "grid-item"> 
-              <TheChessboard
-              :board-config="boardConfig4"
-              :reactive-config="reactiveConfig"
-              :player-color="playerColorChoice"
-              @board-created="handleBoardCreated4" />
-            </div>
-            <div class = "grid-item"> Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</div>
-            <div class = "grid-item"> 
-              <TheChessboard
-              :board-config="boardConfig5"
-              :reactive-config="reactiveConfig"
-              :player-color="playerColorChoice"
-              @board-created="handleBoardCreated5" />
-            </div>
-            <div class = "grid-item"> Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. </div>
+  
           </article>
       </section>
     
@@ -67,13 +39,13 @@ import GameHistoryMove from '@/components/GameHistoryMove.vue';
 const playerColorChoice = ref('abc');
 const reactiveConfig = true;
 
+const page = ref('0');
+const pageSize = ref('5');
 
+const movesArray = ref([]);
 
-const movesArray1 = ref('');
-const movesArray2 = ref('');
-const movesArray3 = ref('');
-const movesArray4 = ref('');
-const movesArray5 = ref('');
+const boardConfig = reactive({});
+
 
 const  calledHistory = ref(false);
 const getCookie = (name) => {
@@ -87,116 +59,59 @@ const getCookie = (name) => {
 
 const emit = defineEmits(['server-give-best-move','started-new-game','game-over', 'game-history-user', 'undo-executed'])
 
+const boardAPI = ref([]);
 
-let boardAPI1 = BoardApi;
-let boardAPI2 = BoardApi; 
-let boardAPI3 = BoardApi;  
-let boardAPI4 = BoardApi; 
-let boardAPI5 = BoardApi;
-    
-
-
-function handleBoardCreated1(api) {
-  boardAPI1 = api;
-}
-
-function handleBoardCreated2(api) {
-  boardAPI2 = api;
-}
-
-function handleBoardCreated3(api) {
-  boardAPI3 = api;
-}
-
-function handleBoardCreated4(api) {
-  boardAPI4 = api;
-}
-
-function handleBoardCreated5(api) {
-  boardAPI5 = api;
-}
-
-const boardConfig1 = reactive({
-  coordinates: true,
-  viewOnly: true,
-  animation: {
-    enabled: false,
-    duration: 0,
-  }
-});
-
-const boardConfig2 = reactive({
-  coordinates: true,
-  viewOnly: true,
-  animation: {
-    enabled: false,
-    duration: 0,
-  }
-});
-
-const boardConfig3 = reactive({
-
-  coordinates: true,
-  viewOnly: true,
-  animation: {
-    enabled: false,
-    duration: 0,
-  }
-});
-
-const boardConfig4 = reactive({
-  coordinates: true,
-  viewOnly: true,
-  animation: {
-    enabled: false,
-    duration: 0,
-  }
-});
-const boardConfig5 = reactive({
-  coordinates: true,
-  viewOnly: true,
-  animation: {
-    enabled: false,
-    duration: 0,
-  }
-});
 let jsonData = '';
+const numberOfElements = ref(0);
 const getGameHistory = async () => {
     // Get CSRF token from cookie
     const csrfToken = getCookie('XSRF-TOKEN');
+    const formData = new FormData();
+    formData.append('page', page.value);
+    formData.append('pageSize', pageSize.value);
     try {
-      // Send a POST request to /logout with the CSRF token
+
       const response = await fetch('http://localhost:8888/getGameHistory', {
-        method: 'GET',
+        method: 'POST',
         headers: {
         
          'X-XSRF-TOKEN': csrfToken, // Include CSRF token in the header
         },
         credentials: 'include', // Include cookies in the request
-
+        body: formData,
       });
+      
       if (response.ok) {
+          // clear array values between requests.
+              movesArray.value = [];
+              boardConfig.value = [];
+              boardAPI.value = [];
+
             // Parse the JSON data from the response
             jsonData = await response.json();
-            
-            movesArray1.value = jsonData[0].moves.split(',');
-             movesArray2.value = jsonData[1].moves.split(',');
-             movesArray3.value = jsonData[2].moves.split(',');
-             movesArray4.value = jsonData[3].moves.split(',');
-             movesArray5.value = jsonData[4].moves.split(',');
 
-             //fen1.value = jsonData[0].fen;
-             boardConfig1.fen = jsonData[0].fen;
-             boardConfig2.fen  = jsonData[1].fen;
-             boardConfig3.fen = jsonData[2].fen;
-             boardConfig4.fen = jsonData[3].fen;
-             boardConfig5.fen = jsonData[4].fen;
+            console.log(response);
+            console.log(jsonData.numberOfElements);
+            numberOfElements.value = jsonData.numberOfElements;
+            for(let i =0; i<numberOfElements.value; i++){
+   
+              movesArray[i] = jsonData.content[i].moves.split(',');
+              boardConfig[i] = ({
+                  fen: jsonData.content[i].fen,
+                  coordinates: true,
+                  viewOnly: true,
+                  orientation:  jsonData.content[i].color,
+                  animation: {
+                  enabled: false,
+                  duration: 0,
+                }
+              })
 
-             boardConfig1.orientation = jsonData[0].color;
-             boardConfig2.orientation = jsonData[1].color;
-             boardConfig3.orientation = jsonData[2].color;
-             boardConfig4.orientation = jsonData[3].color;
-             boardConfig5.orientation = jsonData[4].color;
+              //boardConfig1.fen = jsonData.content[0].fen;
+             //boardConfig1.orientation = jsonData.content[0].color;
+            }
+            lastMoves();
+            lastMoves();
              calledHistory.value = true;
 
 
@@ -210,26 +125,46 @@ const getGameHistory = async () => {
 }
 
 function lastMoves(){
-  console.log("last moves called.");
-  if( typeof boardAPI1.move === 'function' && 
-    typeof boardAPI2.move === 'function' &&
-    typeof boardAPI3.move === 'function' &&
-    typeof boardAPI4.move === 'function' &&
-    typeof boardAPI5.move === 'function' && jsonData != null){
-      console.log("we in lastMoves if");
-      boardAPI1.move(movesArray1.value[movesArray1.value.length-1]);
-      boardAPI2.move(movesArray2.value[movesArray2.value.length-1]);
-      boardAPI3.move(movesArray3.value[movesArray3.value.length-1]);
-      boardAPI4.move(movesArray4.value[movesArray4.value.length-1]);
-      boardAPI5.move(movesArray5.value[movesArray5.value.length-1]);
+
+  if( boardAPI.value != null  && jsonData != null && movesArray.value != null && numberOfElements.value >0){
+      for(let i =0; i<numberOfElements.value; i++){
+        if(boardAPI.value[i]){ // otherwise it will cry about boardAPI.value[i] is undefined...
+          boardAPI.value[i].move(movesArray[i][movesArray[i].length-1]);
+        }
+      
+      }
   }
 }
+
+
 
 onMounted(async () => {
   await getGameHistory();
   lastMoves();
-
+  //testing();
 })
+
+
+
+function testing() { 
+
+  for(let i =0; i<5; i++){
+
+  boardConfig[i] = ({
+      fen: "3r2k1/p4pbp/1p4p1/4P3/4qP1P/3bK1P1/PB1QNR2/8 w - - 2 32",
+      coordinates: true,
+      viewOnly: true,
+      orientation: 'black',
+      animation: {
+      enabled: false,
+      duration: 0,
+    }
+   })
+
+}
+calledHistory.value = true;
+}
+
 </script> 
 
 <style scoped>

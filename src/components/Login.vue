@@ -5,6 +5,7 @@
 <div>
     <button @click="logout">LogoutAJAX</button>
     <button @click="saveGame">Save Game</button>
+    
   </div>
 </template>
 
