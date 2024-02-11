@@ -24,7 +24,7 @@
   .app-container {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+   
   }
   .content{
     flex-grow:1;
