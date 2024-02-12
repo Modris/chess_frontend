@@ -4,7 +4,7 @@
 
 <div>
     <button @click="logout">LogoutAJAX</button>
-    <button @click="saveGame">Save Game</button>
+    <button id="saveGameButton" @click="saveGame">Save Game</button>
     
   </div>
 </template>
@@ -21,13 +21,20 @@ const props = defineProps({
   playerColorChoice: Object,
   beforeLastFen: Object,
   moveHistoryString: Object,
+  result: Object
 
 })
 
-const saveGame = async () => {
+defineExpose({
+  saveGame,
+})
+
+async function saveGame() {
     // Get CSRF token from cookie
+    console.log("Save game called!");
     const csrfToken = getCookie('XSRF-TOKEN');
     const formData = new FormData();
+    formData.append('result', props.result.value);
     formData.append('winner', props.winner.value)
     formData.append('elo', props.stockfishEloChoice.value)
     formData.append('color', props.playerColorChoice.value)

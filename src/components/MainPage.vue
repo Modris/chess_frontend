@@ -43,6 +43,7 @@
   import NewGameOverlay from '@/components/NewGameOverlay.vue';
   import Login from '@/components/Login.vue';
   const myChildWebsSocket = ref(null);
+  const myChildLogin = ref(null);
 
   /*
    The sequence is:
@@ -144,15 +145,17 @@
   const beforeLastFen = ref('');
   const playerColorChoice = ref('');
   const stockfishEloChoice = ref('');
-  function saveGameServer( moveHistoryAnswer, moveHistoryFenAnswer, winnerAnswer, playerColorChoiceAnswer, stockfishEloChoiceAnswer){
+const result = ref('');
+  function saveGameServer( resultAnswer, moveHistoryAnswer, moveHistoryFenAnswer, winnerAnswer, playerColorChoiceAnswer, stockfishEloChoiceAnswer){
+    result.value = resultAnswer;
     stockfishEloChoice.value = stockfishEloChoiceAnswer;
     winner.value = winnerAnswer;
     playerColorChoice.value = playerColorChoiceAnswer;
     beforeLastFen.value = moveHistoryFenAnswer.value[moveHistoryFenAnswer.value.length-2]; // before last FEN
     moveHistoryString.value = moveHistoryAnswer.value.toString();
-
+    myChildLogin.value.saveGame();
   }
-  let groupedPropsSaveGame = { moveHistoryString, beforeLastFen, winner, playerColorChoice, stockfishEloChoice }
+  let groupedPropsSaveGame = {result, moveHistoryString, beforeLastFen, winner, playerColorChoice, stockfishEloChoice }
   </script>
   
   <style>

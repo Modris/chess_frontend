@@ -1,7 +1,6 @@
 <template>
 <main class = "grid"> 
 
-
   <section>
         <div>
         <br>
@@ -77,6 +76,7 @@ const stockfishColor = ref('');
 const reactiveConfig = true;
 const moveHistory = ref([]);
 const moveHistoryFen = ref([]);
+const result = ref('');
 const emit = defineEmits(['save-game','server-give-best-move','started-new-game','game-over', 'game-history-user', 'undo-executed'])
 
 
@@ -213,6 +213,7 @@ function handleDraw() {
     winner.value = 'Draw.';
   }
   gameOver.value = true;
+  result.value = "Draw";
   saveGame();
 }
 function handleCheckmate(isMated) {
@@ -224,8 +225,18 @@ function handleCheckmate(isMated) {
   if(isMated == 'white'){
    // alert("Black wins");
     winner.value = 'Black is victorious';
+    if(playerColorChoice.value == 'black'){
+      result.value = "Win";
+    } else {
+      result.value = "Loss";
+    }
   } else if(isMated == 'black'){
    // alert("White wins");
+   if(playerColorChoice.value == 'white'){
+      result.value = "Win";
+    } else {
+      result.value = "Loss";
+    }
    winner.value = 'White is victorious';
   } 
   gameOver.value = true;
@@ -241,12 +252,15 @@ function handleResign(){
     gameOver.value = true;
     boardConfig.viewOnly = true;
     resignAllowed.value = false;
+
+    result.value = "Loss";
     saveGame();
   }
 }
 
 function  saveGame(){
-  emit('save-game', moveHistory, moveHistoryFen, winner.value, playerColorChoice.value, stockfishEloChoice.value);
+
+  emit('save-game', result.value, moveHistory, moveHistoryFen, winner.value, playerColorChoice.value, stockfishEloChoice.value);
 
 }
 
