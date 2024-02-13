@@ -1,17 +1,26 @@
 <template>
    <main> 
-   <a href="/"> MainPage</a>
-    <br> <br>
 
+   <router-link to="/" tag="button">MainPage</router-link> 
+   <br>
+   <router-link :to='dynamicURL' tag="button">Test</router-link> 
+   <br>
+   <router-link to='/history' tag="button">history</router-link> 
+   
+   <div v-for="(movesArray, index) in movesArray.length" :key="index" > 
+    {{  movesArray[index] }}
+  </div>
+  
+    <br> <br>
 <section class="grid-stats"> 
   <div class = "stats"> 
-
+    
     <div class="stats-item"> Games: {{ totalElements }}</div>
     <div class="stats-item"> Wins: {{  totalWins }}</div>
     <div class="stats-item"> Losses: {{  totalLosses }}</div>
     <div class="stats-item"> Draws: {{  totalDraws }}</div>
     <div class="stats-item"> Total Pages: {{  totalPages }}</div>
-    <div class="stats-item"> Current Page: {{ page }}</div>
+    <div class="stats-item"> Current Page: {{ pageNumber }}</div>
   </div>
 </section>
   <br>
@@ -47,7 +56,7 @@
                       </div>
                       <div class = "grid-item2-item2">
                         
-                        <span class = "enemy"> Player </span>
+                        <span class = "enemy"> {{ player }} </span>
                            <span class = "bigSword" > ⚔️</span>
                         <span class = "enemy"> Stockfish {{ elo[index] }} </span>
                         <br> <br> 
@@ -72,15 +81,17 @@ import 'vue3-chessboard/style.css';
 import GameHistoryMove from '@/components/GameHistoryMove.vue';
 const playerColorChoice = ref('abc');
 const reactiveConfig = true;
-
-const page = ref('0');
+import { useRoute, useRouter} from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 const pageSize = ref(5);
 const numberOfElements = ref(5);
 const movesArray = ref([]);
 const boardConfig = ref({});
 
-const boardAPI = ref([]);
 
+const boardAPI = ref([]);
+const player = ref('Player');
 let bAPI = ref();
 const boardAPIBind = (api, index) => {
   // Save the board API instance to the boardAPI array
@@ -89,7 +100,7 @@ const boardAPIBind = (api, index) => {
 
 };
 
-
+const dynamicURL = ref(`/history/page/1`);
 
 
 const  calledHistory = ref(false);
@@ -114,24 +125,43 @@ const totalDraws = ref(0);
 
 const totalPages = ref(0);
 const totalElements = ref(0);
-const pageNumber = ref(0);
+const pageNumber = ref(1);
 const winner = ref([]);
 const winnerBoolean = ref([]);
 const elo = ref([]);
-const getStatistics = async () => {
 
-  // Get CSRF token from cookie
-  const csrfToken = getCookie('XSRF-TOKEN');
+const getUsername = async () => {
+
+  try {
+
+    const response = await fetch('http://localhost:8888/user', {
+      method: 'GET',
+    });
+    
+    if (response.ok) {
+      
+          // Parse the JSON data from the response
+          jsonData = await response.json();
+          player.value = jsonData.username.charAt(0).toUpperCase() + jsonData.username.slice(1);;
+
+
+      } else {
+          // Handle error cases, for example, log an error message
+          console.error('Failed to fetch username:', response.statusText);
+      }
+  } catch (error) {
+    console.error('Fetching username error ', error);
+  }
+
+}
+
+
+const getStatistics = async () => {
 
     try {
 
       const response = await fetch('http://localhost:8888/statistics', {
         method: 'GET',
-        headers: {
-        
-         'X-XSRF-TOKEN': csrfToken, // Include CSRF token in the header
-        },
-        credentials: 'include', // Include cookies in the request
       });
       
       if (response.ok) {
@@ -156,7 +186,7 @@ const getGameHistory = async () => {
     // Get CSRF token from cookie
     const csrfToken = getCookie('XSRF-TOKEN');
     const formData = new FormData();
-    formData.append('page', page.value);
+    formData.append('page', pageNumber.value-1); // -1 because page starts at 0 for backend numbering instead of 1
     formData.append('pageSize', pageSize.value);
     try {
 
@@ -169,7 +199,7 @@ const getGameHistory = async () => {
         credentials: 'include', // Include cookies in the request
         body: formData,
       });
-      
+      /*
       if (response.ok) {
         
 
@@ -182,11 +212,10 @@ const getGameHistory = async () => {
             await nextTick();
             totalPages.value = jsonData.totalPages;
             totalElements.value = jsonData.totalElements;
-            pageNumber.value = jsonData.pageable.pageNumber;
+            pageNumber.value = jsonData.pageable.pageNumber+1;
 
             for(let i =0; i<numberOfElements.value; i++){
               if(jsonData.content[i].wins == 1){
-                console.log("yes");
                 winnerBoolean.value[i] = true;
               }
               elo.value[i] = jsonData.content[i].elo;
@@ -210,6 +239,7 @@ const getGameHistory = async () => {
                boardAPI.value[i].move(movesArray.value[i][lastMove]);
                
             }
+         
  
           
 
@@ -217,6 +247,7 @@ const getGameHistory = async () => {
             // Handle error cases, for example, log an error message
             console.error('Failed to fetch game history:', response.statusText);
         }
+           */
     } catch (error) {
       console.error('Saving Game into Database Error: ', error);
     }
@@ -239,33 +270,49 @@ function lastMoves(){
 
 
 onMounted(  () => {
+  if( route.params.id > 1){
+      pageNumber.value =  route.params.id;
+    }
+
     getStatistics();
     getGameHistory();
+ 
 
   // lastMoves();
 })
 
 function firstPage() {
-  page.value = 0;
-  getGameHistory();
+
+  if(pageNumber.value != 1){
+    pageNumber.value = 1;
+  
+    router.push(`/history/page/${pageNumber.value}`);
+    getGameHistory();
+  }
 }
 function previousPage(){
-  if(page.value > 0 ){
-    page.value--;
+  if(pageNumber.value > 1 ){
+    pageNumber.value--;
+    router.push(`/history/page/${pageNumber.value}`);
     getGameHistory();
+
   }
 }
 function nextPage(){
 
-  if(page.value < totalPages.value-1 ){
-    page.value++;
+  if(pageNumber.value < totalPages.value ){
+    pageNumber.value++;
+    router.push(`/history/page/${pageNumber.value}`);
     getGameHistory();
+
   }
 }
 function lastPage(){
-  if(totalPages.value > 1){
-    page.value = totalPages.value-1; // because page starts at 0 instead of 1
+  if(pageNumber.value != totalPages.value && totalPages.value > 1){
+    pageNumber.value = totalPages.value; // because page starts at 0 instead of 1
+    router.push(`/history/page/${pageNumber.value}`);
     getGameHistory();
+
   }
 }
 
@@ -354,7 +401,7 @@ function lastPage(){
 .btn99{
   flex-grow: 1;
   font-size:28px;
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-family: 'Franklin Gothic Medium';
   padding: 11px;
   background-color: transparent;
 

@@ -1,7 +1,6 @@
 <template>
+    <button @click="goHistory"> History </button>
      
-
-  <a href="/history"> History</a>
     <Login ref="myChildLogin" v-bind="groupedPropsSaveGame"/>
     <NewGameButton @new-game="updateNewGame"/>
     <main class = "container1">
@@ -42,6 +41,11 @@
   import NewGameButton from '@/components/NewGameButton.vue';
   import NewGameOverlay from '@/components/NewGameOverlay.vue';
   import Login from '@/components/Login.vue';
+
+  import { useRoute, useRouter} from 'vue-router';
+const route = useRoute();
+const router = useRouter();
+
   const myChildWebsSocket = ref(null);
   const myChildLogin = ref(null);
 
@@ -156,6 +160,23 @@ const result = ref('');
     myChildLogin.value.saveGame();
   }
   let groupedPropsSaveGame = {result, moveHistoryString, beforeLastFen, winner, playerColorChoice, stockfishEloChoice }
+  
+ async function closeSocket(){
+   await myChildWebsSocket.value.close();
+   await myChildWebsSocket.value.close();
+   await myChildWebsSocket.value.close();
+
+  }
+  async function goHistory(){
+
+       await myChildWebsSocket.value.close();
+       setTimeout( pushHist, 200);
+  }
+  
+  function pushHist(){
+    router.push("/history");
+  }
+  
   </script>
   
   <style>

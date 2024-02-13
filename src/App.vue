@@ -3,11 +3,12 @@
 
   <main> 
     <div class="app-container"> 
-
       <div class="content"> 
-        <transition name="fade">
-        <router-view />
+        <router-view v-slot="{ Component }">
+        <transition>
+          <component :is="Component" />
         </transition>
+      </router-view>
      </div>
 
   
@@ -16,7 +17,8 @@
   </template>
   
   <script setup>
- 
+
+
   </script>
   
   <style>
@@ -33,12 +35,10 @@
   }
   .fade-enter-active, .fade-leave-active {
     transition-property: opacity;
-    transition-duration: .05s;
+    transition-duration: 0.2s;
   }
   
-  .fade-enter-active {
-    transition-delay: .05s;
-  }
+
   
   .fade-enter, .fade-leave-active {
     opacity: 0

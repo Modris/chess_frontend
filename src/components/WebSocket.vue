@@ -1,5 +1,4 @@
 <template>
-
 </template>
 
 <script setup>
@@ -17,21 +16,25 @@ let websocketClosed = ref(false);
 //var payload = JSON.stringify({'fen': 'k7/7Q/5Q2/8/8/8/3K4/8 w - - 0 1', 'userId': userId});
 const payload = ref('');
 const bestmove = ref('');
-let reconnectInterval;
+
+let reconnectInterval = null;
+let reconnectIntervalAfterClosed = null;
+let handlePingInterval = null;
+let initialConnectPing = null;
 let SOCKET_CONNECTING = 0;
 let SOCKET_OPEN = 1;
 let SOCKET_CLOSING = 2;
 let SOCKET_CLOSED = 3;
 
-
-stomp.connect('guest', 'guest', function(frame) {
-    console.log("Connected!");
-    stomp.subscribe("/topic/bestmove"+userId, handleServerResponse);
+stomp.connect('guest', 'guest', function (frame) {
+    console.log('Connected!');
+    stomp.subscribe(`/topic/bestmove${userId}`, handleServerResponse);
     websocketClosed.value = false;
-    emit('websocket-status', websocketClosed.value);
-    setTimeout(handlePing,3000); // heartbeat every 3 seconds. Starts ping pong!
+     emit('websocket-status', websocketClosed.value); // You might want to use emit here if emit is defined in your component
+     initialConnectPing = setTimeout(handlePing,3000);
+  });
 
-});
+
 
 const props = defineProps({
   fen: String,
@@ -53,10 +56,7 @@ Watcher was not the best idea due to black starting a game twice in a row would 
 So i exposed the method instead and the app will call it.
 */
 
-defineExpose({
-    sendFen,
-    userId,
-})
+
 
 
 function sendFen(payload){
@@ -73,20 +73,23 @@ function handleServerResponse(message){
     bestmove.value = result;
     console.log("Received from server: "+bestmove.value)
     if(bestmove.value == 'Pong'){
-        clearInterval(reconnectInterval);
-        setTimeout(handlePing,3000); // heartbeat every 3 seconds.
+        clearInterval(reconnectInterval); // heartbeat every 3 seconds.
+
+        handlePingInterval = setTimeout(handlePing,3000);
     } else{
         emit('received-server-bestmove', bestmove.value);
     }
 
 }
 
-function handlePing(){
+function handlePing  () {
+
     if(socket.readyState == SOCKET_OPEN){
     let ping = JSON.stringify({'fen': 'Ping', 'userId': userId, 'move': 'Ping'});
     console.log("Sending Ping!");
     stomp.send("/app/websocket", ping);
     }
+  
     reconnectInterval = setInterval(reconnectingIntervalFunction, 8000); // 8 seconds before we attempt to reconnect
     // if no pong is received it will call reconnectIntervalFunction().
 }
@@ -100,33 +103,37 @@ stomp.onStompError = (frame) => {
     console.error('Additional details: ' + frame.body);
 };
 
-
-
-
+function close() {
+    clearInterval(reconnectInterval);
+    clearTimeout(handlePingInterval);
+    clearTimeout(initialConnectPing);
+     socket.close();
+     stomp.disconnect();
+}
  socket.onclose= () => {
     console.log("WebSocket closed....");
-    clearTimeout(handlePing);
-    //reconnectIntervalAfterClosed = setInterval(websocketReconnect, 1000);  // reconnect every 1sec.
+
 
 }
-let reconnectIntervalAfterClosed;
-  // Your function to be called at regular intervals
-  let reconnectingIntervalFunction = () => {
-    clearTimeout(handlePing);
-    clearInterval(reconnectInterval); // Clear reconnecting after 8 seconds if no ping pong (heartbeat) received.
-   // After websocket closed, reconnect every 1 second
+
+
+
+function reconnectingIntervalFunction()  {
+    clearInterval(reconnectInterval);
+    clearTimeout(handlePingInterval);
    setTimeout(maxReconnectAttemps, 15000); // We will disable reconnects after 15 seconds.
-    reconnectIntervalAfterClosed = setInterval(websocketReconnect, 3000); // reconnect every 3 seconds.
+   reconnectIntervalAfterClosed = setInterval(websocketReconnect, 3000); // reconnect every 3 seconds.
+
     
   }
 
   function maxReconnectAttemps() {
     clearInterval(reconnectIntervalAfterClosed);
-    console.log("Maximum websocket reconnecting time reached. No more websocket reconnect attemps.");
+   close();
+    console.log("Maximum websocket reconnecting time reached. No more websocket reconnect attempts.");
   }
 
-  let websocketReconnect = () => {
-
+  function websocketReconnect() {
 
     websocketClosed.value = true;
     emit('websocket-status', websocketClosed.value);
@@ -150,7 +157,7 @@ let reconnectIntervalAfterClosed;
         console.log("Reconnected!");
         stomp.subscribe("/topic/bestmove"+userId, handleServerResponse);
         clearInterval(reconnectIntervalAfterClosed); // clears attempting to reconnect interval.
-        setTimeout(handlePing,3000); // heartbeat every 3 seconds.
+        initialConnectPing = setTimeout(handlePing, 3000); // heartbeat every 3 seconds.
         setTimeout(callServerForBestMoveWebsocket,1000); // wait for connection to 100% establish.
 
         websocketClosed.value = false;
@@ -171,4 +178,13 @@ let reconnectIntervalAfterClosed;
     
 
  
+defineExpose({
+    sendFen,
+    userId,
+    socket,
+    close,
+    handlePing,
+    reconnectInterval
+})
+
 </script>
