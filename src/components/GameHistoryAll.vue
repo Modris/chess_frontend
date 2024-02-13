@@ -3,15 +3,13 @@
 
    <router-link to="/" tag="button">MainPage</router-link> 
    <br>
-   <router-link :to='dynamicURL' tag="button">Test</router-link> 
-   <br>
-   <router-link to='/history' tag="button">history</router-link> 
-   
-   <div v-for="(movesArray, index) in movesArray.length" :key="index" > 
-    {{  movesArray[index] }}
-  </div>
-  
-    <br> <br>
+
+   <br> 
+
+<br>
+ <div v-if="boardAPI != null"> 
+</div>
+
 <section class="grid-stats"> 
   <div class = "stats"> 
     
@@ -21,17 +19,31 @@
     <div class="stats-item"> Draws: {{  totalDraws }}</div>
     <div class="stats-item"> Total Pages: {{  totalPages }}</div>
     <div class="stats-item"> Current Page: {{ pageNumber }}</div>
+    
   </div>
 </section>
   <br>
 <section class = "grid-buttons"> 
     <div class = "buttons"> 
-
-          <button class = "btn99" @click="firstPage">First </button>
+      <div class="biggerText" > Page Size: 
+        <select class="selectTextSize" id="pageSize" v-model="pageSize">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+         </select>  
+      
+      </div>
+         
+      
+      <button class = "btn99" @click="firstPage">First </button>
           <button class = "btn99" @click="previousPage">  Prev  </button>
           <button class = "btn99" @click="nextPage">  Next </button>
           <button class = "btn99" @click="lastPage">  Last </button>
+         
     </div>
+    
   </section>
   <br><br>
             <article>
@@ -85,20 +97,32 @@ import { useRoute, useRouter} from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const pageSize = ref(5);
+
 const numberOfElements = ref(5);
 const movesArray = ref([]);
-const boardConfig = ref({});
+const boardConfig = {};
 
 
-const boardAPI = ref([]);
+const boardAPI = [];
 const player = ref('Player');
 let bAPI = ref();
 const boardAPIBind = (api, index) => {
   // Save the board API instance to the boardAPI array
-  boardAPI.value[index] = api;
-
+  boardAPI[index] = api;
+  boardConfig[index] = basicConfig;
 
 };
+
+let basicConfig = ({ 
+                  fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                  orientation: 'white',
+                  coordinates: true,
+                  viewOnly: true,
+                  animation: {
+                  enabled: false,
+                  duration: 0,
+                }
+                 })
 
 const dynamicURL = ref(`/history/page/1`);
 
@@ -199,7 +223,7 @@ const getGameHistory = async () => {
         credentials: 'include', // Include cookies in the request
         body: formData,
       });
-      /*
+      
       if (response.ok) {
         
 
@@ -217,12 +241,16 @@ const getGameHistory = async () => {
             for(let i =0; i<numberOfElements.value; i++){
               if(jsonData.content[i].wins == 1){
                 winnerBoolean.value[i] = true;
+              } else {
+                winnerBoolean.value[i] = false;
               }
               elo.value[i] = jsonData.content[i].elo;
               winner.value[i] = jsonData.content[i].winner;
               movesArray.value[i] = jsonData.content[i].moves.split(',');
-              fenList.value[i] = jsonData.content[i].fen
-              let config = { // reactive doesn't require .value
+             // fenList.value[i] = jsonData.content[i].fen
+
+
+             let config = { // reactive doesn't require .value
                   fen: jsonData.content[i].fen,
                   coordinates: true,
                   viewOnly: true,
@@ -232,12 +260,15 @@ const getGameHistory = async () => {
                   duration: 0,
                 }
                  }
-              boardAPI.value[i].setConfig(config); 
+              boardAPI[i].setConfig(config); 
 
+              //boardConfig[i].fen = jsonData.content[i].fen;
+              //boardConfig[i].orientation = jsonData.content[i].color;
                let lastMove = movesArray.value[i].length-1;
-            //   boardAPI.value[i].setPosition(fenList.value[i]); 
-               boardAPI.value[i].move(movesArray.value[i][lastMove]);
-               
+
+             //  boardAPI.value[i].setPosition(jsonData.content[i].fen); 
+               boardAPI[i].move(movesArray.value[i][lastMove]);
+
             }
          
  
@@ -247,11 +278,12 @@ const getGameHistory = async () => {
             // Handle error cases, for example, log an error message
             console.error('Failed to fetch game history:', response.statusText);
         }
-           */
+           
     } catch (error) {
       console.error('Saving Game into Database Error: ', error);
     }
 }
+
 
 function lastMoves(){
 
@@ -269,14 +301,22 @@ function lastMoves(){
 }
 
 
+watch(pageSize, () => {
+
+
+  pageNumber.value = 1;
+  getGameHistory();
+})
+
 onMounted(  () => {
   if( route.params.id > 1){
       pageNumber.value =  route.params.id;
     }
 
     getStatistics();
+    getUsername();
     getGameHistory();
- 
+    
 
   // lastMoves();
 })
@@ -387,7 +427,7 @@ function lastPage(){
 
 .grid-buttons{
   display: grid;
-  grid-template-columns: 25%;
+  grid-template-columns: 55%;
   align-items: center;
   justify-content: center;
  
@@ -405,6 +445,22 @@ function lastPage(){
   padding: 11px;
   background-color: transparent;
 
+}
+.biggerText{
+  align-self: center;
+  font-size:28px;
+  font-family: 'Franklin Gothic Medium';
+  padding: 11px;
+  background-color: transparent;
+  border: 3px black double;
+  
+}
+.selectTextSize{
+  font-size: 20px;
+}
+.inputPage{
+  font-size: 20px;
+  text-align: center;
 }
 .btn99:hover{
   background-color: lightblue;
