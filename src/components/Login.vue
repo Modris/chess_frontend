@@ -1,12 +1,5 @@
 <template>
-    <button @click="login">login</button>
 
-
-<div>
-    <button @click="logout">LogoutAJAX</button>
-    <button id="saveGameButton" @click="saveGame">Save Game</button>
-    
-  </div>
 </template>
 
 <script setup>
@@ -25,9 +18,7 @@ const props = defineProps({
 
 })
 
-defineExpose({
-  saveGame,
-})
+
 
 async function saveGame() {
     // Get CSRF token from cookie
@@ -105,5 +96,12 @@ const getCookie = (name) => {
     if (parts.length === 2) return parts.pop().split(';').shift();
   };
 
+
+
+defineExpose({
+  saveGame,
+  login,
+  logout
+})
 
 </script>

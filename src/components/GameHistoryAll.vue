@@ -1,8 +1,6 @@
 <template>
    <main> 
 
-   <router-link to="/" tag="button">MainPage</router-link> 
-   <br>
 
    <br> 
 

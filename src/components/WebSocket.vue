@@ -9,11 +9,11 @@ const userId = crypto.randomUUID(); // this will only work on localhost or HTTPS
 const url = 'ws://localhost:8888/websocket';
 //let options = {debug: false, protocols: Stomp.supportedProtocols()};
 let options = { debug: false, protocols: ['v12.stomp'], heartbeat: {incoming: 0, outgoing: 0} };
-let socket = new WebSocket(url);
-let  stomp = Stomp.over(socket, options);
+let socket = null;
+let stomp = '';
 let websocketClosed = ref(false);
 
-//var payload = JSON.stringify({'fen': 'k7/7Q/5Q2/8/8/8/3K4/8 w - - 0 1', 'userId': userId});
+
 const payload = ref('');
 const bestmove = ref('');
 
@@ -26,7 +26,10 @@ let SOCKET_OPEN = 1;
 let SOCKET_CLOSING = 2;
 let SOCKET_CLOSED = 3;
 
-stomp.connect('guest', 'guest', function (frame) {
+ function connect(){
+    socket = new WebSocket(url);
+    stomp = Stomp.over(socket, options);
+    stomp.connect('guest', 'guest', function (frame) {
     console.log('Connected!');
     stomp.subscribe(`/topic/bestmove${userId}`, handleServerResponse);
     websocketClosed.value = false;
@@ -34,27 +37,21 @@ stomp.connect('guest', 'guest', function (frame) {
      initialConnectPing = setTimeout(handlePing,3000);
   });
 
+  stomp.onWebSocketError = (error) => {
+    console.error('Error with websocket', error);
+    };
 
+    stomp.onStompError = (frame) => {
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);
+    };
 
-const props = defineProps({
-  fen: String,
-  stockfishEloChosen: Number,
-  move: String,
-  fenHistoryUser: String,
-  moveHistoryUser: String,
-})
-
-/*
-    watch(() => props.fen, (newFen) => {
-    if(newFen != 'undo'){ 
-        // if fen is undo then don't send to server. Same thing for start new game. Fen reset due to watcher usage.
-    payload.value = JSON.stringify({'fen': newFen, 'userId': userId,'chosenElo':props.stockfishEloChosen,'move':props.move});
-    sendFen(payload.value);
+    socket.onclose= () => {
+        console.log("WebSocket closed....");
     }
-})
-Watcher was not the best idea due to black starting a game twice in a row would mean no new fen.
-So i exposed the method instead and the app will call it.
-*/
+
+}
+
 
 
 
@@ -94,14 +91,7 @@ function handlePing  () {
     // if no pong is received it will call reconnectIntervalFunction().
 }
 
-stomp.onWebSocketError = (error) => {
-    console.error('Error with websocket', error);
-};
 
-stomp.onStompError = (frame) => {
-    console.error('Broker reported error: ' + frame.headers['message']);
-    console.error('Additional details: ' + frame.body);
-};
 
 function close() {
     clearInterval(reconnectInterval);
@@ -110,11 +100,7 @@ function close() {
      socket.close();
      stomp.disconnect();
 }
- socket.onclose= () => {
-    console.log("WebSocket closed....");
 
-
-}
 
 
 
@@ -133,7 +119,7 @@ function reconnectingIntervalFunction()  {
     console.log("Maximum websocket reconnecting time reached. No more websocket reconnect attempts.");
   }
 
-  function websocketReconnect() {
+function websocketReconnect() {
 
     websocketClosed.value = true;
     emit('websocket-status', websocketClosed.value);
@@ -178,10 +164,19 @@ function reconnectingIntervalFunction()  {
     
 
  
+const props = defineProps({
+  fen: String,
+  stockfishEloChosen: Number,
+  move: String,
+  fenHistoryUser: String,
+  moveHistoryUser: String,
+})
+
 defineExpose({
     sendFen,
     userId,
     socket,
+    connect,
     close,
     handlePing,
     reconnectInterval

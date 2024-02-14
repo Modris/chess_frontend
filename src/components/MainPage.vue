@@ -1,5 +1,5 @@
 <template>
-    <button @click="goHistory"> History </button>
+    <br> <br>
      
     <Login ref="myChildLogin" v-bind="groupedPropsSaveGame"/>
     <NewGameButton @new-game="updateNewGame"/>
@@ -34,15 +34,14 @@
   
   
   <script setup>
-  import {ref} from 'vue';
+  import {ref, onMounted, onUnmounted , nextTick} from 'vue';
   import Chess from '@/components/Chess.vue';
-  import GameHistoryAll from '@/components/GameHistoryAll.vue';
   import WebSocket from '@/components/WebSocket.vue';
   import NewGameButton from '@/components/NewGameButton.vue';
   import NewGameOverlay from '@/components/NewGameOverlay.vue';
   import Login from '@/components/Login.vue';
 
-  import { useRoute, useRouter} from 'vue-router';
+  import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
@@ -161,22 +160,24 @@ const result = ref('');
   }
   let groupedPropsSaveGame = {result, moveHistoryString, beforeLastFen, winner, playerColorChoice, stockfishEloChoice }
   
- async function closeSocket(){
-   await myChildWebsSocket.value.close();
-   await myChildWebsSocket.value.close();
-   await myChildWebsSocket.value.close();
 
-  }
-  async function goHistory(){
-
+  async function closeWebSocket(){
+      console.log("Closing WebSocket connection.");
        await myChildWebsSocket.value.close();
-       setTimeout( pushHist, 200);
   }
   
   function pushHist(){
     router.push("/history");
   }
   
+  onMounted(  async() => {
+    await nextTick();
+    myChildWebsSocket.value.connect();
+  })
+
+  onBeforeRouteLeave((to, from) => {
+      closeWebSocket(); 
+  });
   </script>
   
   <style>
@@ -228,4 +229,6 @@ const result = ref('');
   .btn:hover{
     background: linear-gradient(to bottom, hotpink 0%, tomato 100%);
   }
+
+
   </style>
