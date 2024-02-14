@@ -1,8 +1,10 @@
 <template>
-<button @click="firstMove">⏮️ </button>
-<button @click="previous"> ◀️ </button>
-<button @click="next"> ▶️ </button>
-<button @click="lastMove">⏭️ </button>
+    <div class="flexbox"> 
+        <button @click="firstMove">⏮️ </button>
+        <button @click="previous"> ◀️ </button>
+        <button @click="next"> ▶️ </button>
+        <button @click="lastMove">⏭️ </button>
+</div>
 <br><br>
 </template>
 
@@ -43,8 +45,13 @@ function start(){
 </script>
 
 <style scoped>
-
+.flexbox{
+    display:flex;
+    justify-content: center;
+}
 button{
     font-size:40px;
+    padding: 0;
+    margin: 0;
 }
 </style>

@@ -3,8 +3,9 @@
 
 
    <br> 
-
-<br>
+    <h1 v-if="!authenticated"> Please <button class="buttons2" @click=login> Login </button> to View and Save Games!</h1>
+  
+    <br>
  <div v-if="boardAPI != null"> 
 </div>
 
@@ -100,6 +101,10 @@ const numberOfElements = ref(5);
 const movesArray = ref([]);
 const boardConfig = {};
 
+const login = () => {
+    // Redirect to the specified URL
+    window.location.href = '/oauth2/authorization/keycloak';
+  };
 
 const boardAPI = [];
 const player = ref('Player');
@@ -151,7 +156,7 @@ const pageNumber = ref(1);
 const winner = ref([]);
 const winnerBoolean = ref([]);
 const elo = ref([]);
-
+const authenticated = ref(false);
 const getUsername = async () => {
 
   try {
@@ -161,7 +166,7 @@ const getUsername = async () => {
     });
     
     if (response.ok) {
-      
+      authenticated.value = true;
           // Parse the JSON data from the response
           jsonData = await response.json();
           player.value = jsonData.username.charAt(0).toUpperCase() + jsonData.username.slice(1);;
@@ -170,6 +175,9 @@ const getUsername = async () => {
       } else {
           // Handle error cases, for example, log an error message
           console.error('Failed to fetch username:', response.statusText);
+          if(response.statusText == 'Unauthorized'){
+            authenticated.value = false;
+          }
       }
   } catch (error) {
     console.error('Fetching username error ', error);
@@ -275,6 +283,7 @@ const getGameHistory = async () => {
         } else {
             // Handle error cases, for example, log an error message
             console.error('Failed to fetch game history:', response.statusText);
+
         }
            
     } catch (error) {
@@ -474,5 +483,22 @@ function lastPage(){
 .moves{
   font-size:20px;
   font-weight: 400;
+}
+.buttons2{
+  display: inline;
+    padding:10px;
+    color: blueviolet;
+    font-size: 30px;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+
+}
+.buttons2:hover{
+    background-color: lightblue;
+}
+.buttons2:focus{
+    outline: none;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
 <main class = "grid"> 
 
-  <section>
+  <section class="section1">
         <div>
         <br>
 
@@ -33,7 +33,7 @@
       <li v-for="(item,index) in moveHistory">
         <span v-bind:class="{ 'highlight': 
               (isViewingHistory && moveHistory.length > 0 && index == historyPlyCounter-1 && moveHistory[historyPlyCounter - 1] === item) ||
-              (!isViewingHistory && moveHistory[moveHistory.length - 1] === item)
+              (!isViewingHistory && moveHistory[moveHistory.length - 1] === item && index == moveHistory.length-1)
                 }">
               {{ index+1 }}   {{ item }} 
           </span>
@@ -348,6 +348,7 @@ function  lastMovePressedHistory(){
 .grid{
   display: grid;
   grid-template-columns: 1fr 1fr;
+ 
 
 }
 .gridItem2{

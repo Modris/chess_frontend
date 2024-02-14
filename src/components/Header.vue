@@ -1,10 +1,13 @@
 <template>
     <Login ref="myChildLogin" />
     <nav>
-        <div> <router-link to="/">Main</router-link> </div>
+        <div> <button  class="buttons1" @click="mainPage">Main</button> </div>
         <div>  <button  class="buttons1" @click="pushHist">History</button> </div>
-        <div>  <button  class="buttons1" @click="login">Login</button> </div>
-        <div>  <button class="buttons1" @click="logout">Logout</button> </div>
+        <div> 
+             <button v-if="!authenticated" class="buttons2" @click="login">Login</button>
+             <button v-if="authenticated" class="buttons3" @click="logout">Logout</button> 
+        </div>
+        <div>  <button  class="buttons1" @click="goGame">Game</button> </div>
     </nav>
 
 
@@ -14,7 +17,7 @@
 </template>
 
 <script setup>
-import { ref} from 'vue'
+import { ref, onMounted} from 'vue'
 import Login from './Login.vue';
 import { useRoute, useRouter} from 'vue-router';
 const route = useRoute();
@@ -24,11 +27,17 @@ const myChildLogin = ref(null);
 
 
 const emit = defineEmits(['stop-websocket']);
+
+function mainPage(){
+    router.push("/");
+}
 function pushHist(){
    // emit('stop-websocket');
     router.push("/history");
 }
-
+function goGame(){
+    router.push("/game");
+}
 function login(){
     myChildLogin.value.login();
 }
@@ -36,6 +45,32 @@ function logout(){
     myChildLogin.value.logout();
 }
 
+const authenticated = ref(false);
+const getUsername = async () => {
+
+  try {
+    const response = await fetch('http://localhost:8888/user', {
+      method: 'GET',
+    });
+    
+    if (response.ok) {
+      authenticated.value = true;
+      } else {
+          // Handle error cases, for example, log an error message
+          console.error('Failed to fetch username:', response.statusText);
+          if(response.statusText == 'Unauthorized'){
+            authenticated.value = false;
+          }
+      }
+  } catch (error) {
+    console.error('Fetching username error ', error);
+  }
+
+}
+
+onMounted( () => {
+    getUsername();
+})
 </script>
 
 <style>
@@ -76,4 +111,42 @@ nav a:hover, .buttons1:hover{
 .buttons1:focus {
   outline: none; /* Remove the default focus style on button click */
 }
+.buttons2{
+    display: block;
+    padding:10px;
+    color: blue;
+    line-height: 30px;
+    font-size: 20px;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+
+}
+.buttons2:hover{
+    background-color: #086e27;
+}
+.buttons2:focus{
+    outline: none;
+}
+.buttons3{
+    display: block;
+    padding:10px;
+    color: blue;
+    line-height: 30px;
+    font-size: 20px;
+    text-decoration: none;
+    background: transparent;
+    font-size: 20px;
+    border: none;
+    cursor: pointer;
+
+}
+.buttons3:hover{
+    background-color: lightcoral;
+}
+.buttons3:focus{
+    outline: none;
+}
+
 </style>

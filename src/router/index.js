@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import MainPage from '@/components/MainPage.vue'
 import GameHistoryAll from '@/components/GameHistoryAll.vue';
+import SingularGame from '@/components/SingularGame.vue';
 
 
 const routes = [
@@ -12,7 +13,11 @@ const routes = [
         path: "/history",
         alias: ['/history', `/history/page/:id`],
         component: GameHistoryAll
-      }
+      },
+      {
+        path: `/game/`,
+        component: SingularGame
+    }
 
 ];
 
