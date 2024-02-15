@@ -74,7 +74,11 @@
                         <span :class="{'loser': !winnerBoolean[index], 'winner': winnerBoolean[index]}">   {{ winner[index] }} </span>
         
                       </div>
-        
+                      <div  class = "grid-item2-item3">
+                        <div class="grid-item2-item3-flexbox"> 
+                          <router-link class="reviewClass" :to="`/game/${gameID[index]}`"> Review Game</router-link>
+                        </div>
+                      </div>
                     </div>
                 </div>
                 </article>
@@ -157,6 +161,9 @@ const winner = ref([]);
 const winnerBoolean = ref([]);
 const elo = ref([]);
 const authenticated = ref(false);
+const gameID = ref([]);
+
+
 const getUsername = async () => {
 
   try {
@@ -165,7 +172,7 @@ const getUsername = async () => {
       method: 'GET',
     });
     
-    if (response.ok) {
+    if (response.status == 200) {
       authenticated.value = true;
           // Parse the JSON data from the response
           jsonData = await response.json();
@@ -194,7 +201,7 @@ const getStatistics = async () => {
         method: 'GET',
       });
       
-      if (response.ok) {
+      if (response.status == 200) {
         
             // Parse the JSON data from the response
             jsonData = await response.json();
@@ -230,7 +237,7 @@ const getGameHistory = async () => {
         body: formData,
       });
       
-      if (response.ok) {
+      if (response.status == 200) {
         
 
             // Parse the JSON data from the response
@@ -250,6 +257,7 @@ const getGameHistory = async () => {
               } else {
                 winnerBoolean.value[i] = false;
               }
+              gameID.value[i] = jsonData.content[i].game_id;
               elo.value[i] = jsonData.content[i].elo;
               winner.value[i] = jsonData.content[i].winner;
               movesArray.value[i] = jsonData.content[i].moves.split(',');
@@ -399,9 +407,20 @@ function lastPage(){
   align-self: center;
   margin-top: -20px;
 }
+.grid-item2-item3{
+  grid-area: span 1/1 / 2/3;
+  align-self: first baseline;
+}
+.grid-item2-item3-flexbox{
+  display: flex;
+  align-self: flex-stat;
+}
 .bigSword{
 
   font-size: 60px;
+}
+.reviewClass{
+  font-size: 30px;
 }
 .enemy{
   font-size: 40px;

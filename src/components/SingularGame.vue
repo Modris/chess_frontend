@@ -1,9 +1,6 @@
 <template>
     <br> <br>
-
-
-    <button @click="getGame"> Get Game2</button> 
-    <button @click="getGameTest"> Get Game Test</button> 
+   <div v-if="noContent"> <h1> Could not find game with ID: {{ route.params.id }}. </h1></div>
 
     <button  class="btn42" @click="boardAPI?.toggleOrientation()"> Flip Board </button> 
     <br> <br>
@@ -75,7 +72,7 @@
     const moveHistory = ref([]);
     //const moveHistory = ref(['a2a3','a4b5','c2c3','d4d2','e5e3','a2a3','a4b5','c2c3','d4d2','e5e3','a2a3','a4b5','c2c3','d4d2','e5e3','a2a3','a4b5','c2c3','d4d2','e5e3','a2a3','a4b5','c2c3','d4d2','e5e3','a2a3','a4b5','c2c3','d4d2','e5e3','a2a3','a4b5','c2c3','d4d2','e5e3','a2a3','a4b5','c2c3','d4d2','e5e3','a2a3','a4b5','c2c3','d4d2','e5e3','a2a3','a4b5','c2c3','d4d2','e5e3']);
    
-    const winner = ref('Draw. Three fold repetition.');
+    const winner = ref('');
     const fen = ref('');
     const wins = ref(0);
     let jsonData = '';
@@ -184,73 +181,34 @@
       
     }
  
-    
-const getGameTest = async () => {
-
-try {
-
-  const response = await fetch('http://localhost:8888/get/game/asdasdkasd', {
-    method: 'GET',
-  });
-  
-  if (response.ok) {
-    
-        // Parse the JSON data from the response
-        jsonData = await response.json();
-
-        winner.value = jsonData.winner;
-        playerColorChoice.value = jsonData.color;
-        wins.value = jsonData.wins;
-        moveHistory.value = jsonData.moves.split(',');
-
-        let config = { // reactive doesn't require .value
-                 // fen: jsonData.fen,
-                  coordinates: true,
-                  viewOnly: true,
-                  orientation:  playerColorChoice.value,
-                  animation: {
-                  enabled: false,
-                  duration: 0,
-                }
-         }
-         boardAPI.setConfig(config); 
-         for(let i =0; i<moveHistory.value.length; i++){
-          boardAPI.move(moveHistory.value[i]);
-         }
-         
-         setTimeout(scrollToBottom, 100);
-       //  let lastMove = moveHistory.value.length-1;
-         //boardAPI.move(moveHistory.value[lastMove]);
-
-    } else {
-        // Handle error cases, for example, log an error message
-        console.error('Failed to fetch gane:', response.statusText);
-    }
-} catch (error) {
-  console.error('Fetching game error ', error);
-}
-}
+const noContent = ref(true);
 
 const getGame = async () => {
 
+
 try {
 
-  const response = await fetch('http://localhost:8888/get/game/bd64ec012ec549939318f699a48070cb', {
+  const response = await fetch(`http://localhost:8888/get/game/${route.params.id}`, {
     method: 'GET',
   });
   
-  if (response.ok) {
-    
+  if (response.status == 204){
+      noContent.value = true;
+  }
+  if (response.status == 200) {
+    noContent.value = false;
         // Parse the JSON data from the response
-        jsonData = await response.json();
 
+        jsonData = await response.json();
+        stockfishEloChoice.value = jsonData.elo;
         winner.value = jsonData.winner;
         playerColorChoice.value = jsonData.color;
         wins.value = jsonData.wins;
         moveHistory.value = jsonData.moves.split(',');
-
+        await nextTick();
+     
         let config = { // reactive doesn't require .value
-                 // fen: jsonData.fen,
+                  fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                   coordinates: true,
                   viewOnly: true,
                   orientation:  playerColorChoice.value,
@@ -260,10 +218,15 @@ try {
                 }
          }
          boardAPI.setConfig(config); 
-         for(let i =0; i<moveHistory.value.length; i++){
+         console.log(moveHistory.value.length);
+   
+          for(let i =0; i<moveHistory.value.length; i++){
           boardAPI.move(moveHistory.value[i]);
-         }
-         
+          }
+
+         setTimeout(loadPgn, 100); // this is required when move count is above 197. 
+         // The move array will be correct and history will work but the board position upon loading 
+         // will be a few moves back. This is why we loadPGN afterwards.
          setTimeout(scrollToBottom, 100);
        //  let lastMove = moveHistory.value.length-1;
          //boardAPI.move(moveHistory.value[lastMove]);
@@ -276,11 +239,14 @@ try {
   console.error('Fetching game error ', error);
 }
 }
-
+function loadPgn(){
+       
+  let pgn = boardAPI.getPgn();
+   boardAPI.loadPgn(pgn);
+ 
+}
  onMounted(  () => {
-  if( route.params.id > 1){
-      
-    }
+  getGame();
 })
 
  </script>

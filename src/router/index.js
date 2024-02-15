@@ -15,7 +15,7 @@ const routes = [
         component: GameHistoryAll
       },
       {
-        path: `/game/`,
+        path: `/game/:id`,
         component: SingularGame
     }
 

@@ -7,7 +7,7 @@
              <button v-if="!authenticated" class="buttons2" @click="login">Login</button>
              <button v-if="authenticated" class="buttons3" @click="logout">Logout</button> 
         </div>
-        <div>  <button  class="buttons1" @click="goGame">Game</button> </div>
+
     </nav>
 
 
@@ -35,9 +35,7 @@ function pushHist(){
    // emit('stop-websocket');
     router.push("/history");
 }
-function goGame(){
-    router.push("/game");
-}
+
 function login(){
     myChildLogin.value.login();
 }
