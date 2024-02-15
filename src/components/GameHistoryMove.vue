@@ -5,7 +5,6 @@
         <button @click="next"> ▶️ </button>
         <button @click="lastMove">⏭️ </button>
 </div>
-<br><br>
 </template>
 
 <script setup>

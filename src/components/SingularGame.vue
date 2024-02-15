@@ -3,6 +3,7 @@
 
 
     <button @click="getGame"> Get Game2</button> 
+    <button @click="getGameTest"> Get Game Test</button> 
 
     <button  class="btn42" @click="boardAPI?.toggleOrientation()"> Flip Board </button> 
     <br> <br>
@@ -182,7 +183,54 @@
       scrollToBottom();
       
     }
+ 
     
+const getGameTest = async () => {
+
+try {
+
+  const response = await fetch('http://localhost:8888/get/game/asdasdkasd', {
+    method: 'GET',
+  });
+  
+  if (response.ok) {
+    
+        // Parse the JSON data from the response
+        jsonData = await response.json();
+
+        winner.value = jsonData.winner;
+        playerColorChoice.value = jsonData.color;
+        wins.value = jsonData.wins;
+        moveHistory.value = jsonData.moves.split(',');
+
+        let config = { // reactive doesn't require .value
+                 // fen: jsonData.fen,
+                  coordinates: true,
+                  viewOnly: true,
+                  orientation:  playerColorChoice.value,
+                  animation: {
+                  enabled: false,
+                  duration: 0,
+                }
+         }
+         boardAPI.setConfig(config); 
+         for(let i =0; i<moveHistory.value.length; i++){
+          boardAPI.move(moveHistory.value[i]);
+         }
+         
+         setTimeout(scrollToBottom, 100);
+       //  let lastMove = moveHistory.value.length-1;
+         //boardAPI.move(moveHistory.value[lastMove]);
+
+    } else {
+        // Handle error cases, for example, log an error message
+        console.error('Failed to fetch gane:', response.statusText);
+    }
+} catch (error) {
+  console.error('Fetching game error ', error);
+}
+}
+
 const getGame = async () => {
 
 try {

@@ -23,10 +23,13 @@
     <div class="gameHistoryItem1 biggerText"> 
       <button :class="{'websocket_online': !websocketStatus, 'websocket_offline': websocketStatus}"> &nbsp; &nbsp;</button>
         <span> Stockfish elo: {{ stockfishEloChoice}} </span> </div>
-    <div class="gameHistoryItem2"> <GameHistoryMove @firstmove-pressed="firstMovePressedHistory" 
+    <div class="gameHistoryItem2">
+      <div class="gameHistoryItem2Child"> <GameHistoryMove @firstmove-pressed="firstMovePressedHistory" 
                 @lastmove-pressed="lastMovePressedHistory" @next-pressed="nextPressedHistory"
                 @previous-pressed="previousPressedHistory" 
-               :stockfishEloChoice="stockfishEloChoice"/></div>
+               :stockfishEloChoice="stockfishEloChoice"/>
+      </div>
+    </div>
     <div class="gameHistoryItem3"> 
       <div id="scroller" class = "moveHistoryFlexbox"> 
       <h1 class="moveHistory" v-if="moveHistory.length == 0"> Move History</h1>
@@ -56,7 +59,11 @@
           </div>
       </div>
     </div>
-    <div class="gameHistoryItem4Overlap">  <h1 class="winnerChicken"> {{ winner }}</h1> </div>
+    <div class="gameHistoryItem4Overlap"> 
+      <div class="gameHistoryItem4OverlapFlexbox">
+         <h1 class="winnerChicken"> {{ winner }}</h1> 
+      </div>
+    </div>
  
    </div>
   
@@ -268,10 +275,53 @@ function  saveGame(){
 watch(moveHistory.value, () => {
   // Use nextTick to wait for the DOM to update before scrolling
   nextTick(() => {
-    let scroller = document.querySelector("#scroller");
-    scroller.scrollTo(0, document.body.scrollHeight);
+    scrollToBottom();
   });
 });
+
+const currentHistoryPosition = ref(0);
+    const maxScrollHeight = ref(0);
+
+    function scrollToBottom(){
+      let scroller = document.querySelector("#scroller");
+       currentHistoryPosition.value = scroller.scrollHeight;
+       maxScrollHeight.value = scroller.scrollHeight;
+      scroller.scrollTo({ top:  currentHistoryPosition.value});
+    }
+    function scrollToTop(){
+      let scroller = document.querySelector("#scroller");
+       currentHistoryPosition.value = 0;
+      scroller.scrollTo({ top:  currentHistoryPosition.value});
+    }
+
+    function scrollToBottomSlightly(){
+      let scroller = document.querySelector("#scroller");
+      if(currentHistoryPosition.value == 0){
+        currentHistoryPosition.value = currentHistoryPosition.value-30;
+      } 
+      currentHistoryPosition.value = currentHistoryPosition.value+13;
+      if(currentHistoryPosition.value > maxScrollHeight.value-90 ){
+        currentHistoryPosition.value =  maxScrollHeight.value;
+      }
+        scroller.scrollTo({ top:  currentHistoryPosition.value});
+  
+    }
+    function scrollToTopSlightly(){
+      
+      let scroller = document.querySelector("#scroller");
+      if(currentHistoryPosition.value == scroller.scrollHeight){
+        currentHistoryPosition.value = currentHistoryPosition.value-90;
+      } 
+
+       currentHistoryPosition.value = currentHistoryPosition.value-13;
+
+       if(currentHistoryPosition.value <0){
+        currentHistoryPosition.value = 0;
+      }
+      scroller.scrollTo({ top:  currentHistoryPosition.value});
+
+    }
+
 
 function historyStart(fen, move){
 
@@ -283,43 +333,51 @@ function historyStart(fen, move){
 const isViewingHistory = ref(false);
 const historyPlyCounter = ref(0);
 
-function previousPressedHistory(){
-  if( isViewingHistory.value == true){
-    if( historyPlyCounter.value >=2){
-      historyPlyCounter.value = historyPlyCounter.value -1;
-    boardAPI.viewPrevious();
+ function previousPressedHistory(){
+      if( isViewingHistory.value == true){
+        if( historyPlyCounter.value >=2){
+          historyPlyCounter.value = historyPlyCounter.value -1;
+        boardAPI.viewPrevious();
+        scrollToTopSlightly();
+        }
+      } else if( boardAPI.getCurrentPlyNumber() > 1) {
+        isViewingHistory.value = true;
+        historyPlyCounter.value =  boardAPI.getCurrentPlyNumber()-1;
+        boardAPI.viewPrevious();
+        scrollToTopSlightly();
+     
+      }
     }
-  } else if( boardAPI.getCurrentPlyNumber() > 1) {
-    isViewingHistory.value = true;
-    historyPlyCounter.value =  boardAPI.getCurrentPlyNumber()-1;
-    boardAPI.viewPrevious();
-  }
-}
+    
+    
+    function  nextPressedHistory(){
+      if( isViewingHistory.value == true){
+        if(historyPlyCounter.value < boardAPI.getCurrentPlyNumber() )
+        historyPlyCounter.value = historyPlyCounter.value+1;
+         boardAPI.viewNext();
+         scrollToBottomSlightly();
+       }
+      }
+    
+    
+    function  firstMovePressedHistory(){
 
-
-function  nextPressedHistory(){
-  if( isViewingHistory.value == true){
-    if(historyPlyCounter.value < boardAPI.getCurrentPlyNumber() )
-    historyPlyCounter.value = historyPlyCounter.value+1;
-     boardAPI.viewNext();
-   }
-  }
-
-
-function  firstMovePressedHistory(){
-  if(boardAPI.getCurrentPlyNumber() >0){
-
-    boardAPI.viewHistory(1);
-    isViewingHistory.value = true;
-    historyPlyCounter.value = 1;
-  }
-}
-function  lastMovePressedHistory(){
-  boardAPI.stopViewingHistory();
-  isViewingHistory.value = false;
-  historyPlyCounter.value = boardAPI.getCurrentPlyNumber();
-  
-}
+    
+      if(boardAPI.getCurrentPlyNumber() >0){
+    
+        boardAPI.viewHistory(1);
+        isViewingHistory.value = true;
+        historyPlyCounter.value = 1;
+        scrollToTop();
+      }
+    }
+    function  lastMovePressedHistory(){
+      boardAPI.stopViewingHistory();
+      isViewingHistory.value = false;
+      historyPlyCounter.value = boardAPI.getCurrentPlyNumber();
+      scrollToBottom();
+      
+    }
 
 
 
@@ -335,7 +393,7 @@ function  lastMovePressedHistory(){
   height: 100px;
   overflow-y: auto;
   padding:30px;
-  margin-top:-50px;
+  margin-top:-30px;
 
 }
 
@@ -353,7 +411,7 @@ function  lastMovePressedHistory(){
 }
 .gridItem2{
   display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr;
   justify-content: center;
   align-items:center;
   border: 5px darkgray;
@@ -364,50 +422,70 @@ background: radial-gradient(circle at 18.7% 37.8%, rgb(250, 250, 250) 0%, rgb(22
   width:300px;
   margin-top:100px;
   margin-bottom:100px;
-
+  padding: 0px;
+  grid-gap: 20px;
+  
 }
 .gameHistoryItem1{
 grid-area: 1/1/1/4;
 
+
 }
 .gameHistoryItem2{
   grid-area: 2/1/2/4;
-  margin-top:-40px;
+  z-index:5;
+
 }
+.gameHistoryItem2Child{
+      display: flex;
+      flex-grow: 1;
+      justify-content: center;
+
+    
+
+    }
 .gameHistoryItem3{
 
   grid-area: 3/1/3/4;
-  margin-top:0px;
+
+
 }
 .gameHistoryItem4{
   grid-area:  4/1/4/4;
   z-index:6;
-  margin-top:-80px;
   height:60px;
 }
 .gameHistoryItem4Flexbox{
   display:flex;
 
   justify-content: center;
+
 }
 .gameHistoryItem4Overlap{
   grid-area: 4/1/4/4;
   z-index:5;
-  margin-top:-50px;
+  margin-top:-30px;
+
 }
 
 
 .biggerText{
-  padding:4px;
+  padding: 0;
+  margin: 0;
   font-size:30px;
   justify-content: center;
   text-align:center;
 }
 .winnerChicken{
   font-size:40px;
-  margin-top:20px;
+  padding: 0;
+  margin: 0;
 }
-
+.gameHistoryItem4OverlapFlexbox{
+  display: flex;
+  flex-shrink: 1;
+  justify-content: center;
+}
 
 
 .btn42 {
@@ -433,6 +511,7 @@ grid-area: 1/1/1/4;
   font-size:20px;
   border-radius: 50%;
   background-color:green;
+
 }
 .websocket_offline{
   font-size:20px;
