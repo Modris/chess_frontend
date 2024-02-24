@@ -33,7 +33,8 @@ async function saveGame() {
     formData.append('fen', props.beforeLastFen.value)
     try {
       // Send a POST request to /logout with the CSRF token
-      const response = await fetch('http://localhost:8888/save', {
+     // const response = await fetch('http://localhost:8888/save', {
+        const response = await fetch('https://slychess.com/save', {
         method: 'POST',
         headers: {
         
@@ -60,7 +61,8 @@ const logout = async () => {
 
     try {
       // Send a POST request to /logout with the CSRF token
-      const response = await fetch('http://localhost:8888/logout', {
+      //const response = await fetch('http://localhost:8888/logout', {
+        const response = await fetch('https://slychess.com/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

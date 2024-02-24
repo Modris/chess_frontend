@@ -47,9 +47,11 @@ const authenticated = ref(false);
 const getUsername = async () => {
 
   try {
-    const response = await fetch('http://localhost:8888/user', {
+    // const response = await fetch('http://localhost:8888/user', {
+    const response = await fetch('https://slychess.com/user', {
       method: 'GET',
-    });
+    }
+    );
     
     if (response.ok) {
       authenticated.value = true;

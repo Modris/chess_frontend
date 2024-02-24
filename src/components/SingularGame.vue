@@ -188,7 +188,8 @@ const getGame = async () => {
 
 try {
 
-  const response = await fetch(`http://localhost:8888/get/game/${route.params.id}`, {
+  //const response = await fetch(`http://localhost:8888/get/game/${route.params.id}`, {
+    const response = await fetch(`https://slychess.com/get/game/${route.params.id}`, {
     method: 'GET',
   });
   
@@ -218,7 +219,7 @@ try {
                 }
          }
          boardAPI.setConfig(config); 
-         console.log(moveHistory.value.length);
+  
    
           for(let i =0; i<moveHistory.value.length; i++){
           boardAPI.move(moveHistory.value[i]);

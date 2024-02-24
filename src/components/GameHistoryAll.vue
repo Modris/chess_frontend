@@ -1,7 +1,6 @@
 <template>
    <main> 
 
-
    <br> 
     <h1 v-if="!authenticated"> Please <button class="buttons2" @click=login> Login </button> to View and Save Games!</h1>
   
@@ -163,12 +162,12 @@ const elo = ref([]);
 const authenticated = ref(false);
 const gameID = ref([]);
 
-
 const getUsername = async () => {
 
   try {
 
-    const response = await fetch('http://localhost:8888/user', {
+     //const response = await fetch('http://localhost:8888/user', {
+      const response = await fetch('https://slychess.com/user', {
       method: 'GET',
     });
     
@@ -197,7 +196,8 @@ const getStatistics = async () => {
 
     try {
 
-      const response = await fetch('http://localhost:8888/statistics', {
+      // const response = await fetch('http://localhost:8888/statistics', {
+        const response = await fetch('https://slychess.com/statistics', {
         method: 'GET',
       });
       
@@ -220,21 +220,15 @@ const getStatistics = async () => {
 }
 const getGameHistory = async () => {
 
-    // Get CSRF token from cookie
-    const csrfToken = getCookie('XSRF-TOKEN');
-    const formData = new FormData();
-    formData.append('page', pageNumber.value-1); // -1 because page starts at 0 for backend numbering instead of 1
-    formData.append('pageSize', pageSize.value);
+    const params = new URLSearchParams();
+    params.append('page', pageNumber.value - 1); // -1 because page starts at 0 for backend numbering instead of 1
+    params.append('pageSize', pageSize.value);
     try {
 
-      const response = await fetch('http://localhost:8888/getGameHistory', {
-        method: 'POST',
-        headers: {
-        
-         'X-XSRF-TOKEN': csrfToken, // Include CSRF token in the header
-        },
-        credentials: 'include', // Include cookies in the request
-        body: formData,
+       //  const url = `http://localhost:8888/getGameHistory?${params.toString()}`;
+       const url = `https://slychess.com/getGameHistory?${params.toString()}`;
+        const response = await fetch(url, {
+        method: 'GET',
       });
       
       if (response.status == 200) {

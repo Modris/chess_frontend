@@ -1,6 +1,5 @@
 <template>
 <main class = "grid"> 
-
   <section class="section1">
         <div>
         <br>
@@ -183,7 +182,7 @@ function handleNewGame() {
 }
 
 function handleMove() {
- 
+
     if(boardAPI.getCurrentPlyNumber() != 0){
     moveHistory.value.push(boardAPI.getLastMove().lan);
     moveHistoryFen.value.push(boardAPI.getFen());
